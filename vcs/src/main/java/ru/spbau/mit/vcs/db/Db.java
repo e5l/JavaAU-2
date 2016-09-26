@@ -4,9 +4,11 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import org.jetbrains.annotations.NotNull;
 import ru.spbau.mit.vcs.db.entities.Branch;
 import ru.spbau.mit.vcs.db.entities.Commit;
 import ru.spbau.mit.vcs.db.entities.File;
+import ru.spbau.mit.vcs.exceptions.*;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -27,103 +29,110 @@ public class Db {
     public Db(String name) {
         try {
             Class.forName("org.sqlite.JDBC");
+            initDb(name);
+        } catch (SQLException e) {
+            System.out.println("Failed to init databse");
         } catch (ClassNotFoundException e) {
             System.out.println("JDBC library not found");
         }
-
-        try {
-            connectionSource = new JdbcConnectionSource(String.format("%s%s", dbPath, name));
-
-            branches = DaoManager.createDao(connectionSource, Branch.class);
-            commits = DaoManager.createDao(connectionSource, Commit.class);
-            files = DaoManager.createDao(connectionSource, File.class);
-
-            TableUtils.createTableIfNotExists(connectionSource, Branch.class);
-            TableUtils.createTableIfNotExists(connectionSource, Commit.class);
-            TableUtils.createTableIfNotExists(connectionSource, File.class);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
-    public Branch getActiveBranch() {
+    private void initDb(String name) throws SQLException {
+        connectionSource = new JdbcConnectionSource(String.format("%s%s", dbPath, name));
+
+        branches = DaoManager.createDao(connectionSource, Branch.class);
+        commits = DaoManager.createDao(connectionSource, Commit.class);
+        files = DaoManager.createDao(connectionSource, File.class);
+
+        TableUtils.createTableIfNotExists(connectionSource, Branch.class);
+        TableUtils.createTableIfNotExists(connectionSource, Commit.class);
+        TableUtils.createTableIfNotExists(connectionSource, File.class);
+    }
+
+    public
+    @NotNull
+    Branch getActiveBranch() throws NoActiveBranchFoundException {
         List<Branch> result = null;
 
         try {
             result = branches.queryBuilder().selectColumns().where().eq("active", true).query();
         } catch (SQLException e) {
             System.out.println("Failed to get active branch");
-            return null;
         }
 
+        assert result != null;
         if (result.size() > 1 || result.isEmpty()) {
             System.out.println("No active branch found");
-            return null;
+            throw new NoActiveBranchFoundException();
         }
 
         return result.get(0);
     }
 
-    public void setActiveBranch(Branch branch) {
+    public void setActiveBranch(@NotNull Branch branch) throws FailedToSetActiveBranchException {
         branch.active = true;
 
         try {
             branches.update(branch);
         } catch (SQLException e) {
-            System.out.println("Failed to set active branch");
+            throw new FailedToSetActiveBranchException();
         }
     }
 
-    public Branch createBranch(String name) {
-        Branch result = new Branch(name, false);
+    public
+    @NotNull
+    Branch createBranch(@NotNull String name) throws FailedToCreateNewBranchException {
+        Branch result = new Branch(name);
 
         try {
             branches.create(result);
         } catch (SQLException e) {
-            System.out.println(String.format("Failed to create new branch: %s", e.getMessage()));
+            throw new FailedToCreateNewBranchException();
         }
 
         return result;
     }
 
-    public Branch getBranch(String name) {
-        List<Branch> result = null;
+    public
+    @NotNull
+    Branch getBranch(@NotNull String name) throws FailedGetBranchException {
+        List<Branch> result;
 
         try {
             result = branches.queryBuilder().selectColumns().where().eq("name", name).query();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedGetBranchException();
         }
 
         if (result.isEmpty()) {
-            return null;
+            throw new FailedGetBranchException();
         }
 
         return result.get(0);
     }
 
-    public void closeBranch(String name) {
+    public void closeBranch(@NotNull String name) throws FailedGetBranchException, FailedToCloseBranchException {
         Branch branch = getBranch(name);
         branch.closed = false;
 
         try {
             branches.update(branch);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedToCloseBranchException();
         }
     }
 
-    public Commit commit(Map<String, String> files, String message, String author) {
-        return commit(files, message, author, getActiveBranch());
+    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author) throws NoActiveBranchFoundException, FailedToCommitException {
+        commit(files, message, author, getActiveBranch());
     }
 
-    public Commit commit(Map<String, String> files, String message, String author, Branch branch) {
+    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author, @NotNull Branch branch) throws FailedToCommitException {
         Commit commit = new Commit(message, author, new Date(Calendar.getInstance().getTimeInMillis()), branch);
 
         try {
             commits.create(commit);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedToCommitException();
         }
 
         files.entrySet()
@@ -133,15 +142,15 @@ public class Db {
                     try {
                         Db.this.files.create(file);
                     } catch (SQLException e) {
-                        e.printStackTrace();
+                        throw new FailedToCreateFileException(file.path);
                     }
 
                 });
-
-        return commit;
     }
 
-    public Commit getLastCommit(Branch branch) {
+    public
+    @NotNull
+    Commit getLastCommit(@NotNull Branch branch) throws FailedToGetCommitException {
         try {
             return commits
                     .queryBuilder()
@@ -150,13 +159,13 @@ public class Db {
                     .where()
                     .eq("branch_id", branch).queryForFirst();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedToGetCommitException();
         }
-
-        return null;
     }
 
-    public Commit getCommitById(int id) {
+    public
+    @NotNull
+    Commit getCommitById(int id) throws FailedToGetCommitException {
         try {
             return commits
                     .queryBuilder()
@@ -165,13 +174,13 @@ public class Db {
                     .eq("id", id)
                     .queryForFirst();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedToGetCommitException();
         }
-
-        return null;
     }
 
-    public List<File> getCommitFiles(Commit commit) {
+    public
+    @NotNull
+    List<File> getCommitFiles(@NotNull Commit commit) throws FailedGetCommitFilesException {
         try {
             return files
                     .queryBuilder()
@@ -180,28 +189,27 @@ public class Db {
                     .eq("commit_id", commit)
                     .query();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedGetCommitFilesException();
         }
 
-        return null;
     }
 
     public void close() {
         try {
             connectionSource.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Failed to close Database");
         }
     }
 
-    public List<Commit> getLog() {
+    public
+    @NotNull
+    List<Commit> getLog() throws FailedToPrintLogException, NoActiveBranchFoundException {
         try {
             return commits.queryBuilder().selectColumns().orderBy("submitted", true).where().eq("branch_id", getActiveBranch()).query();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new FailedToPrintLogException();
         }
-
-        return null;
     }
 
 }

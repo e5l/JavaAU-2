@@ -19,11 +19,14 @@ public class VcsCLI {
         System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "ERROR");
         vcs = new Vcs();
 
-        if (args.length < 1) {
-            help();
-            return;
+        try {
+            executeCommand(args);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
+    }
 
+    private static void executeCommand(String[] args) throws Exception {
         String command = args[0];
         switch (command) {
             case "init":
@@ -48,7 +51,6 @@ public class VcsCLI {
                 merge(args);
                 break;
             default:
-                help();
                 break;
         }
 
@@ -56,12 +58,12 @@ public class VcsCLI {
     }
 
 
-    private static void init() {
+    private static void init() throws Exception{
         vcs.create();
         System.out.println("create empty repository");
     }
 
-    private static void status(String[] args) {
+    private static void status(String[] args) throws Exception {
         VcsStatus status = vcs.status();
 
         System.out.println("Added:");
@@ -77,17 +79,12 @@ public class VcsCLI {
         System.out.println();
     }
 
-    private static void log() {
+    private static void log() throws Exception {
         System.out.println("Log:");
         vcs.log().forEach(line -> System.out.println(line));
     }
 
-    private static void branch(String[] args) {
-        if (args.length == 1) {
-            vcs.branches().forEach(line -> System.out.println(line));
-            return;
-        }
-
+    private static void branch(String[] args) throws Exception {
         if (args.length != 3) {
             System.out.println("branch: invalid arguments count");
             return;
@@ -107,7 +104,7 @@ public class VcsCLI {
         }
     }
 
-    private static void commit(String[] args) {
+    private static void commit(String[] args) throws Exception {
         if (args.length < 3) {
             System.out.println("Enter commit message and author");
             return;
@@ -119,7 +116,7 @@ public class VcsCLI {
         vcs.commit(message, author);
     }
 
-    private static void merge(String[] args) {
+    private static void merge(String[] args) throws Exception {
         if (args.length != 2) {
             System.out.println("Merge: invalid arguments count");
             return;
@@ -128,7 +125,7 @@ public class VcsCLI {
         vcs.mergeBranch(args[1]);
     }
 
-    private static void checkout(String[] args) {
+    private static void checkout(String[] args) throws Exception {
         if (args.length != 3) {
             System.out.println("Invalid args count");
             return;
@@ -152,6 +149,4 @@ public class VcsCLI {
         }
     }
 
-    private static void help() {
-    }
 }

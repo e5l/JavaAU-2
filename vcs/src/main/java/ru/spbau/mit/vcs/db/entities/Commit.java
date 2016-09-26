@@ -17,7 +17,7 @@ public class Commit {
     public String author;
 
     @DatabaseField(canBeNull = false)
-    public Date submitted;
+    private Date submitted;
 
     @DatabaseField(canBeNull = false, foreign = true)
     public Branch branch;

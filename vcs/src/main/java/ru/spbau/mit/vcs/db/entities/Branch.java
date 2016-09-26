@@ -16,9 +16,9 @@ public class Branch {
 
     public Branch() {}
 
-    public Branch(String name, boolean closed) {
+    public Branch(String name) {
         this.name = name;
-        this.closed = closed;
+        this.closed = false;
     }
 
     public boolean equals(Object other) {
