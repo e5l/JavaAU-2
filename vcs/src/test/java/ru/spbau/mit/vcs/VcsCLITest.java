@@ -27,23 +27,23 @@ public class VcsCLITest {
 
     @Test
     public void commitAndCheckout() throws IOException {
-//        final File workingDir = prepareWorkingDir();
-//        final File tempFile = new File(String.format("%s/%s", workingDir.getAbsolutePath(), "hello.txt"));
-//        final String[] beforeCommit = {".auvcs.sqlite"};
-//        final String[] afterCommit = {".auvcs.sqlite", "hello.txt"};
-//        final String content = "hello, world";
-//
-//        initRepo();
-//
-//        tempFile.createNewFile();
-//        FileUtils.writeStringToFile(tempFile, content, Charset.defaultCharset());
-//
-//        makeCommit();
-//
-//        checkoutCommit(1);
-//        assertArrayEquals(beforeCommit, workingDir.list());
-//        checkoutCommit(2);
-//        assertArrayEquals(afterCommit, workingDir.list());
+        final File workingDir = prepareWorkingDir();
+        final File tempFile = new File(String.format("%s/%s", workingDir.getAbsolutePath(), "hello.txt"));
+        final String[] beforeCommit = {".auvcs.sqlite"};
+        final String[] afterCommit = {".auvcs.sqlite", "hello.txt"};
+        final String content = "hello, world";
+
+        initRepo();
+
+        tempFile.createNewFile();
+        FileUtils.writeStringToFile(tempFile, content, Charset.defaultCharset());
+
+        makeCommit();
+
+        checkoutCommit(1);
+        assertArrayEquals(beforeCommit, workingDir.list());
+        checkoutCommit(2);
+        assertArrayEquals(afterCommit, workingDir.list());
     }
 
     @Test

@@ -189,7 +189,7 @@ public final class Vcs {
     private
     @NotNull
     Map<String, String> readLocalFiles() {
-        return FileUtils.listFiles(new java.io.File("."), null, true)
+        return FileUtils.listFiles(getPath(), null, true)
                 .stream()
                 .filter(file -> !file.getName().equals(".auvcs.sqlite"))
                 .collect(Collectors.toMap(java.io.File::getPath, file -> {
@@ -205,7 +205,7 @@ public final class Vcs {
 
     private void replaceRepoContent(List<File> content) {
         FileUtils
-                .listFilesAndDirs(new java.io.File("."), TrueFileFilter.TRUE, TrueFileFilter.TRUE)
+                .listFilesAndDirs(getPath(), TrueFileFilter.TRUE, TrueFileFilter.TRUE)
                 .stream()
                 .filter(it -> !it.getName().equals(".") && !it.getName().equals(dbpath))
                 .forEach(java.io.File::delete);
@@ -216,7 +216,7 @@ public final class Vcs {
                 onFs.createNewFile();
                 FileUtils.writeStringToFile(onFs, loaded.content, Charset.defaultCharset());
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Failed to checkout file");
             }
         });
     }
@@ -225,7 +225,7 @@ public final class Vcs {
     @NotNull
     File merge(File left, File right) {
         final String[] leftContent = left.content.split("\n");
-        final String[] rightContent = left.content.split("\n");
+        final String[] rightContent = right.content.split("\n");
 
         final StringBuilder targetContent = new StringBuilder();
 
@@ -248,6 +248,10 @@ public final class Vcs {
         }
 
         return new File(left.commit, left.path, targetContent.toString());
+    }
+
+    private java.io.File getPath() {
+        return new java.io.File(System.getProperty("user.dir"));
     }
 
 }
