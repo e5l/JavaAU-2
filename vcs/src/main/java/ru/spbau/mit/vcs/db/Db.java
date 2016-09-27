@@ -69,10 +69,14 @@ public class Db {
         return result.get(0);
     }
 
-    public void setActiveBranch(@NotNull Branch branch) throws FailedToSetActiveBranchException {
+    public void setActiveBranch(@NotNull Branch branch) throws FailedToSetActiveBranchException, NoActiveBranchFoundException {
+        Branch oldBranch = getActiveBranch();
+
+        oldBranch.active = false;
         branch.active = true;
 
         try {
+            branches.update(oldBranch);
             branches.update(branch);
         } catch (SQLException e) {
             throw new FailedToSetActiveBranchException();
@@ -81,8 +85,8 @@ public class Db {
 
     public
     @NotNull
-    Branch createBranch(@NotNull String name) throws FailedToCreateNewBranchException {
-        Branch result = new Branch(name);
+    Branch createBranch(@NotNull String name, boolean active) throws FailedToCreateNewBranchException {
+        Branch result = new Branch(name, active);
 
         try {
             branches.create(result);

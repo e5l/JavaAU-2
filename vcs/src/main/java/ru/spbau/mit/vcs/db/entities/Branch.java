@@ -16,8 +16,9 @@ public class Branch {
 
     public Branch() {}
 
-    public Branch(String name) {
+    public Branch(String name, boolean active) {
         this.name = name;
+        this.active = active;
         this.closed = false;
     }
 

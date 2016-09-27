@@ -37,8 +37,7 @@ public final class Vcs {
     }
 
     private final void createDb() throws FailedToCreateNewBranchException, FailedToSetActiveBranchException, FailedToCommitException, NoActiveBranchFoundException {
-        final Branch master = db.createBranch("master");
-        db.setActiveBranch(master);
+        final Branch master = db.createBranch("master", true);
         db.commit(new HashMap<>(), "initial commit", "vcs");
     }
 
@@ -110,7 +109,7 @@ public final class Vcs {
      * @param name
      */
     public void createBranch(String name) throws Exception {
-        final Branch branch = db.createBranch(name);
+        final Branch branch = db.createBranch(name, false);
         db.commit(readLocalFiles(), "create new branch", "vcs", branch);
     }
 
