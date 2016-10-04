@@ -7,38 +7,61 @@ import ru.spbau.mit.vcs.db.Db;
 import ru.spbau.mit.vcs.db.entities.Branch;
 import ru.spbau.mit.vcs.db.entities.Commit;
 import ru.spbau.mit.vcs.db.entities.File;
-import ru.spbau.mit.vcs.exceptions.FailedToCommitException;
-import ru.spbau.mit.vcs.exceptions.FailedToCreateNewBranchException;
-import ru.spbau.mit.vcs.exceptions.FailedToSetActiveBranchException;
-import ru.spbau.mit.vcs.exceptions.NoActiveBranchFoundException;
+import ru.spbau.mit.vcs.db.entities.FileEntity;
+import ru.spbau.mit.vcs.exceptions.*;
 import ru.spbau.mit.vcs.utils.VcsStatus;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Vcs {
     private final Db db;
-    private final String dbpath = ".auvcs.sqlite";
+    private final String DB_PATH = ".auvcs.sqlite";
+    private final String TRACKED_PATH = ".tracked.list";
+
+    private List<String> tracked = new ArrayList<>();
 
     /**
      * Initialize database
      */
-    public Vcs() {
-        db = new Db(dbpath);
+    public Vcs() throws IOException, ClassNotFoundException {
+        db = new Db(DB_PATH);
+
+        final String path = System.getProperty("user.dir");
+        final java.io.File trackedFile = new java.io.File(String.format("%s/%s", path, TRACKED_PATH));
+
+        if (trackedFile.exists()) {
+            final FileInputStream inputStream = new FileInputStream(trackedFile);
+            final ObjectInputStream trackedStream = new ObjectInputStream(inputStream);
+
+            tracked = (List<String>) trackedStream.readObject();
+        }
     }
 
     /**
      * create Db
      */
-    public void create() throws FailedToSetActiveBranchException, FailedToCreateNewBranchException, FailedToCommitException, NoActiveBranchFoundException {
+    public void create() throws FailedToSetActiveBranchException, FailedToCreateNewBranchException, FailedToCommitException, NoActiveBranchFoundException, FailedToGetCommitException, FailedGetCommitFilesException, IOException {
         createDb();
     }
 
-    private final void createDb() throws FailedToCreateNewBranchException, FailedToSetActiveBranchException, FailedToCommitException, NoActiveBranchFoundException {
-        final Branch master = db.createBranch("master", true);
+    private final void createDb() throws FailedToCreateNewBranchException, FailedToSetActiveBranchException, FailedToCommitException, NoActiveBranchFoundException, FailedToGetCommitException, FailedGetCommitFilesException, IOException {
+        db.createBranch("master", true);
         db.commit(new HashMap<>(), "initial commit", "vcs");
+
+        final String path = System.getProperty("user.dir");
+        final java.io.File trackedState = new java.io.File(String.format("%s/%s", path, TRACKED_PATH));
+        if (!trackedState.exists()) {
+            trackedState.createNewFile();
+        }
+
+        final FileOutputStream fileOutputStream = new FileOutputStream(trackedState);
+        final ObjectOutputStream writer = new ObjectOutputStream(fileOutputStream);
+
+        writer.writeObject(tracked);
+        writer.close();
     }
 
     /* Commit API */
@@ -53,9 +76,10 @@ public final class Vcs {
         final List<ru.spbau.mit.vcs.db.entities.File> files = db.getCommitFiles(db.getLastCommit(branch));
         final Map<String, String> currentFiles = readLocalFiles();
 
+
         final Map<String, String> commitFilenames = files
                 .stream()
-                .collect(Collectors.toMap(file -> file.path, file -> file.content));
+                .collect(Collectors.toMap(file -> file.path, file -> file.entity.content));
 
         final Set<String> added = new HashSet<>(currentFiles.keySet());
         final Set<String> removed = new HashSet<>(commitFilenames.keySet());
@@ -76,7 +100,7 @@ public final class Vcs {
             }
         });
 
-        return new VcsStatus(added, removed, modified);
+        return new VcsStatus(tracked.stream().collect(Collectors.toSet()), removed, modified);
     }
 
     /**
@@ -85,7 +109,7 @@ public final class Vcs {
      * @param message
      */
     public void commit(String message, String author) throws Exception {
-        db.commit(readLocalFiles(), message, author);
+        db.commit(readFiles(tracked), message, author);
     }
 
     /**
@@ -99,6 +123,50 @@ public final class Vcs {
                 .stream()
                 .map(commit -> String.format("id: %d, @%s: %s", commit.id, commit.author, commit.message))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Add file to repository
+     *
+     * @param file
+     * @throws Exception
+     */
+    public void add(String file) throws Exception {
+        final java.io.File current = new java.io.File(file);
+        if (!current.exists()) {
+            throw new FileNotFoundException(file);
+        }
+
+        final Branch branch = db.getActiveBranch();
+        final List<ru.spbau.mit.vcs.db.entities.File> files = db.getCommitFiles(db.getLastCommit(branch));
+
+        List<File> old = files.stream().filter(it -> file.equals(it.path)).collect(Collectors.toList());
+        if (old.size() != 0) {
+            File oldVersion = old.get(0);
+            String content = FileUtils.readFileToString(current, Charset.defaultCharset());
+
+            if (content.equals(oldVersion.entity.content)) {
+                return;
+            }
+        }
+
+        tracked.add(file);
+    }
+
+    /**
+     * Remove file from repository
+     *
+     * @param file
+     */
+    public void remove(String file) {
+        tracked.remove(file);
+
+        final java.io.File handler = new java.io.File(file);
+        if (!handler.exists()) {
+            return;
+        }
+
+        handler.delete();
     }
 
     /* Branch API */
@@ -181,8 +249,25 @@ public final class Vcs {
         replaceRepoContent(result);
     }
 
-    public void close() {
+    /**
+     * Close connection and flush data
+     *
+     * @throws IOException
+     */
+    public void close() throws IOException {
         db.close();
+
+        final String path = System.getProperty("user.dir");
+        final java.io.File trackedState = new java.io.File(String.format("%s/%s", path, TRACKED_PATH));
+        if (!trackedState.exists()) {
+            return;
+        }
+
+        final FileOutputStream fileOutputStream = new FileOutputStream(trackedState);
+        final ObjectOutputStream writer = new ObjectOutputStream(fileOutputStream);
+
+        writer.writeObject(tracked);
+        writer.close();
     }
 
     private
@@ -202,18 +287,36 @@ public final class Vcs {
                 }));
     }
 
+    private Map<String, String> readFiles(List<String> pathes) {
+        return pathes
+                .stream()
+                .map(path -> new java.io.File(path))
+                .collect(Collectors.toMap(java.io.File::getPath, file -> {
+                    try {
+                        return FileUtils.readFileToString(file, Charset.defaultCharset());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    return null;
+                }));
+    }
+
     private void replaceRepoContent(List<File> content) {
         FileUtils
                 .listFilesAndDirs(getPath(), TrueFileFilter.TRUE, TrueFileFilter.TRUE)
                 .stream()
-                .filter(it -> !it.getName().equals(".") && !it.getName().equals(dbpath))
+                .filter(it ->
+                        !it.getName().equals(".") &&
+                                !it.getName().equals(DB_PATH) &&
+                                !it.getName().equals(TRACKED_PATH))
                 .forEach(java.io.File::delete);
 
         content.forEach(loaded -> {
             final java.io.File onFs = new java.io.File(loaded.path);
             try {
                 onFs.createNewFile();
-                FileUtils.writeStringToFile(onFs, loaded.content, Charset.defaultCharset());
+                FileUtils.writeStringToFile(onFs, loaded.entity.content, Charset.defaultCharset());
             } catch (IOException e) {
                 System.out.println("Failed to checkout file");
             }
@@ -223,8 +326,8 @@ public final class Vcs {
     private static final
     @NotNull
     File merge(File left, File right) {
-        final String[] leftContent = left.content.split("\n");
-        final String[] rightContent = right.content.split("\n");
+        final String[] leftContent = left.entity.content.split("\n");
+        final String[] rightContent = right.entity.content.split("\n");
 
         final StringBuilder targetContent = new StringBuilder();
 
@@ -246,11 +349,10 @@ public final class Vcs {
             targetContent.append(String.format("2> %s\n", rightContent[i]));
         }
 
-        return new File(left.commit, left.path, targetContent.toString());
+        return new File(left.commit, left.path, new FileEntity(targetContent.toString()));
     }
 
     private java.io.File getPath() {
         return new java.io.File(System.getProperty("user.dir"));
     }
-
 }

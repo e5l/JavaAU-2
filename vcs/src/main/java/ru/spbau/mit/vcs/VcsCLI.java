@@ -17,9 +17,8 @@ public class VcsCLI {
 
     public static void main(String[] args) {
         System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "ERROR");
-        vcs = new Vcs();
-
         try {
+            vcs = new Vcs();
             executeCommand(args);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -31,6 +30,15 @@ public class VcsCLI {
         switch (command) {
             case "init":
                 init();
+                break;
+            case "add":
+                add(args);
+                break;
+            case "remove":
+                remove(args);
+                break;
+            case "reset":
+                reset(args);
                 break;
             case "status":
                 status(args);
@@ -50,6 +58,8 @@ public class VcsCLI {
             case "merge":
                 merge(args);
                 break;
+            case "clean":
+                clean();
             default:
                 break;
         }
@@ -57,10 +67,22 @@ public class VcsCLI {
         vcs.close();
     }
 
-
     private static void init() throws Exception{
         vcs.create();
         System.out.println("create empty repository");
+    }
+
+    private static void add(String[] args) throws Exception {
+        String file = args[1];
+        vcs.add(file);
+    }
+
+    private static void remove(String[] args) {
+        String file = args[1];
+        vcs.remove(file);
+    }
+
+    private static void reset(String[] args) {
     }
 
     private static void status(String[] args) throws Exception {
@@ -147,6 +169,9 @@ public class VcsCLI {
                 System.out.println("Invalid checkout command");
                 break;
         }
+    }
+
+    private static void clean() {
     }
 
 }

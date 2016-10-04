@@ -14,13 +14,13 @@ public class File {
     @DatabaseField(canBeNull = false)
     public String path;
 
-    @DatabaseField(canBeNull = false)
-    public String content;
+    @DatabaseField(foreign = true, canBeNull = false)
+    public FileEntity entity;
 
-    public File(Commit commit, String path, String content) {
+    public File(Commit commit, String path, FileEntity entity) {
         this.commit = commit;
         this.path = path;
-        this.content = content;
+        this.entity = entity;
     }
 
     File() {}

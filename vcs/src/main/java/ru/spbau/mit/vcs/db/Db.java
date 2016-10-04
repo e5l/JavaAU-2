@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.spbau.mit.vcs.db.entities.Branch;
 import ru.spbau.mit.vcs.db.entities.Commit;
 import ru.spbau.mit.vcs.db.entities.File;
+import ru.spbau.mit.vcs.db.entities.FileEntity;
 import ru.spbau.mit.vcs.exceptions.*;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Db {
     private JdbcConnectionSource connectionSource;
@@ -23,6 +25,7 @@ public class Db {
     private Dao<Branch, String> branches;
     private Dao<Commit, Long> commits;
     private Dao<File, Long> files;
+    private Dao<FileEntity, Long> fileEntities;
 
     final private String dbPath = "jdbc:sqlite:";
 
@@ -43,10 +46,12 @@ public class Db {
         branches = DaoManager.createDao(connectionSource, Branch.class);
         commits = DaoManager.createDao(connectionSource, Commit.class);
         files = DaoManager.createDao(connectionSource, File.class);
+        fileEntities = DaoManager.createDao(connectionSource, FileEntity.class);
 
         TableUtils.createTableIfNotExists(connectionSource, Branch.class);
         TableUtils.createTableIfNotExists(connectionSource, Commit.class);
         TableUtils.createTableIfNotExists(connectionSource, File.class);
+        TableUtils.createTableIfNotExists(connectionSource, FileEntity.class);
     }
 
     public
@@ -126,34 +131,52 @@ public class Db {
         }
     }
 
-    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author) throws NoActiveBranchFoundException, FailedToCommitException {
+    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author) throws NoActiveBranchFoundException, FailedToCommitException, FailedToGetCommitException, FailedGetCommitFilesException {
         commit(files, message, author, getActiveBranch());
     }
 
-    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author, @NotNull Branch branch) throws FailedToCommitException {
-        Commit commit = new Commit(message, author, new Date(Calendar.getInstance().getTimeInMillis()), branch);
+    public void commit(@NotNull Map<String, String> files, @NotNull String message, @NotNull String author, @NotNull Branch branch) throws FailedToCommitException, NoActiveBranchFoundException, FailedToGetCommitException, FailedGetCommitFilesException {
 
+        final Map<String, FileEntity> createdLinks = makeNewLinks(files);
+
+        Commit commit = new Commit(message, author, new Date(Calendar.getInstance().getTimeInMillis()), branch);
         try {
             commits.create(commit);
         } catch (SQLException e) {
             throw new FailedToCommitException();
         }
 
-        files.entrySet()
+        createdLinks.entrySet()
                 .stream()
-                .map(file -> new File(commit, file.getKey(), file.getValue()))
+                .map(it -> new File(commit, it.getKey(), it.getValue()))
                 .forEach(file -> {
                     try {
                         Db.this.files.create(file);
                     } catch (SQLException e) {
                         throw new FailedToCreateFileException(file.path);
                     }
+                });
 
+        final Commit lastCommit = getLastCommit(getActiveBranch());
+        if (lastCommit == null) {
+            return;
+        }
+
+        final List<File> lastCommitFiles = getCommitFiles(lastCommit);
+        final List<File> oldLinks = lastCommitFiles.stream().filter(it -> !files.containsKey(it.path)).collect(Collectors.toList());
+        oldLinks
+                .stream()
+                .map(it -> new File(commit, it.path, it.entity))
+                .forEach(file -> {
+                    try {
+                        Db.this.files.create(file);
+                    } catch (SQLException e) {
+                        throw new FailedToCreateFileException(file.path);
+                    }
                 });
     }
 
     public
-    @NotNull
     Commit getLastCommit(@NotNull Branch branch) throws FailedToGetCommitException {
         try {
             return commits
@@ -214,6 +237,23 @@ public class Db {
         } catch (SQLException e) {
             throw new FailedToPrintLogException();
         }
+    }
+
+    private Map<String, FileEntity> makeNewLinks(Map<String, String> files) {
+        Map<String, FileEntity> entities = files.entrySet()
+                .stream()
+                .collect(Collectors.toMap(it -> it.getKey(), it -> new FileEntity(it.getValue())));
+
+        entities.forEach((path, entity) -> {
+            try {
+                Db.this.fileEntities.create(entity);
+            } catch (SQLException e) {
+                throw new FailedToCreateFileException(path);
+            }
+
+        });
+
+        return entities;
     }
 
 }
