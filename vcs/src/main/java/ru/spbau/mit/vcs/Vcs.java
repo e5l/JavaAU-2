@@ -109,6 +109,7 @@ public final class Vcs {
      */
     public void commit(String message, String author) throws Exception {
         db.commit(readFiles(tracked), message, author);
+        tracked.clear();
     }
 
     /**
@@ -242,7 +243,13 @@ public final class Vcs {
         final Map<String, File> mergeLeftCandidates = current.stream().filter(file -> otherNames.contains(file.path)).collect(Collectors.toMap(file -> file.path, file -> file));
         final Map<String, File> mergeRightCandidates = other.stream().filter(file -> currentNames.contains(file.path)).collect(Collectors.toMap(file -> file.path, file -> file));
 
-        final List<File> merged = mergeLeftCandidates.entrySet().stream().map(pair -> merge(pair.getValue(), mergeRightCandidates.get(pair.getKey()))).collect(Collectors.toList());
+        final List<File> merged = mergeLeftCandidates.entrySet().stream().map(pair -> {
+            try {
+                return merge(pair.getValue(), mergeRightCandidates.get(pair.getKey()));
+            } catch (FailedGetCommitFilesException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
         result.addAll(merged);
 
         replaceRepoContent(result);
@@ -325,11 +332,11 @@ public final class Vcs {
         });
     }
 
-    private static final
+    private
     @NotNull
-    File merge(File left, File right) {
-        final String[] leftContent = left.entity.content.split("\n");
-        final String[] rightContent = right.entity.content.split("\n");
+    File merge(File left, File right) throws FailedGetCommitFilesException {
+        final String[] leftContent = db.loadEntity(left.entity.id).content.split("\n");
+        final String[] rightContent = db.loadEntity(right.entity.id).content.split("\n");
 
         final StringBuilder targetContent = new StringBuilder();
 

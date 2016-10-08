@@ -256,4 +256,19 @@ public class Db {
         return entities;
     }
 
+    public FileEntity loadEntity(long id) throws FailedGetCommitFilesException {
+        List<FileEntity> result;
+
+        try {
+            result = fileEntities.queryBuilder().selectColumns().where().eq("id", id).query();
+        } catch (SQLException e) {
+            throw new FailedGetCommitFilesException();
+        }
+
+        if (result.isEmpty()) {
+            throw new FailedGetCommitFilesException();
+        }
+
+        return result.get(0);
+    }
 }
