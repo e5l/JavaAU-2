@@ -1,2 +1,4 @@
 Lazy
 *.md
+.gradle
+.build
