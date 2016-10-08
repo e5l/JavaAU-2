@@ -51,8 +51,7 @@ public final class Vcs {
         db.createBranch("master", true);
         db.commit(new HashMap<>(), "initial commit", "vcs");
 
-        final String path = System.getProperty("user.dir");
-        final java.io.File trackedState = new java.io.File(String.format("%s/%s", path, TRACKED_PATH));
+        final java.io.File trackedState = new java.io.File(formatPath(TRACKED_PATH));
         if (!trackedState.exists()) {
             trackedState.createNewFile();
         }
@@ -132,7 +131,7 @@ public final class Vcs {
      * @throws Exception
      */
     public void add(String file) throws Exception {
-        final java.io.File current = new java.io.File(file);
+        final java.io.File current = new java.io.File(formatPath(file));
         if (!current.exists()) {
             throw new FileNotFoundException(file);
         }
@@ -257,8 +256,7 @@ public final class Vcs {
     public void close() throws IOException {
         db.close();
 
-        final String path = System.getProperty("user.dir");
-        final java.io.File trackedState = new java.io.File(String.format("%s/%s", path, TRACKED_PATH));
+        final java.io.File trackedState = new java.io.File(formatPath(TRACKED_PATH));
         if (!trackedState.exists()) {
             return;
         }
@@ -268,6 +266,10 @@ public final class Vcs {
 
         writer.writeObject(tracked);
         writer.close();
+    }
+
+    public void clean() throws Exception {
+        checkoutBranch(db.getActiveBranch().name);
     }
 
     private
@@ -290,7 +292,7 @@ public final class Vcs {
     private Map<String, String> readFiles(List<String> pathes) {
         return pathes
                 .stream()
-                .map(path -> new java.io.File(path))
+                .map(path -> new java.io.File(formatPath(path)))
                 .collect(Collectors.toMap(java.io.File::getPath, file -> {
                     try {
                         return FileUtils.readFileToString(file, Charset.defaultCharset());
@@ -354,5 +356,9 @@ public final class Vcs {
 
     private java.io.File getPath() {
         return new java.io.File(System.getProperty("user.dir"));
+    }
+
+    private String formatPath(String path) {
+        return String.format("%s/%s", System.getProperty("user.dir"), path);
     }
 }

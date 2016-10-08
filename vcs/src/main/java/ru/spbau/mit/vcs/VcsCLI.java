@@ -171,7 +171,8 @@ public class VcsCLI {
         }
     }
 
-    private static void clean() {
+    private static void clean() throws Exception {
+        vcs.clean();
     }
 
 }
