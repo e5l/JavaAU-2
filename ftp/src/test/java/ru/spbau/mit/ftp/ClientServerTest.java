@@ -10,7 +10,6 @@ import ru.spbau.mit.ftp.server.exception.MustBeDirectoryException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
