@@ -1,4 +1,4 @@
-package ru.spbau.mit.ftp.server.fs;
+package ru.spbau.mit.ftp;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;

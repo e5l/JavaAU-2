@@ -29,7 +29,10 @@ public class FtpClient {
 
         final int size = inputStream.readInt();
         byte[] data = new byte[size];
-        inputStream.read(data, 0, size);
+        int readed = 0;
+        while (readed < size) {
+            readed += inputStream.read(data, readed, size - readed);
+        }
 
         return data;
     }

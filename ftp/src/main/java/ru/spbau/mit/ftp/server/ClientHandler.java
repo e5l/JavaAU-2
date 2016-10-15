@@ -2,7 +2,7 @@ package ru.spbau.mit.ftp.server;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import ru.spbau.mit.ftp.server.exception.MustBeDirectoryException;
-import ru.spbau.mit.ftp.server.fs.Browser;
+import ru.spbau.mit.ftp.Browser;
 import ru.spbau.mit.ftp.utils.Command;
 
 import java.io.*;
