@@ -1,2 +1,5 @@
 Lazy
+.idea
 *.md
+build
+.gradle
