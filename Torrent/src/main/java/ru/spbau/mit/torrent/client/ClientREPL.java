@@ -41,11 +41,7 @@ public class ClientREPL {
             }
         }
 
-        try {
-            client.stop();
-        } catch (IOException e) {
-            System.out.println("Failed to save state: " + e.getMessage());
-        }
+        client.stop();
     }
 
     private static boolean evaluateCommand() throws IOException {
