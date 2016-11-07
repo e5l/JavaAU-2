@@ -7,6 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
+/**
+ * TODO: удаление клиентов по таймаутfileу
+ */
 public class Server extends Thread {
     private final int port;
     private ServerSocket socket;

@@ -1,5 +1,6 @@
 package ru.spbau.mit.torrent.server.storage;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -8,7 +9,7 @@ public class FileInfo {
     public final String name;
     public final long size;
     
-    private Set<ClientInfo> seeds;
+    private Set<ClientInfo> seeds = new HashSet<>();
 
     public FileInfo(int id, String name, long size) {
         this.id = id;
@@ -31,5 +32,9 @@ public class FileInfo {
     public Set<ClientInfo> getActiveSeeds() {
         seeds = seeds.stream().filter(ClientInfo::isActive).collect(Collectors.toSet());
         return seeds;
+    }
+
+    public void addSeed(byte[] ip, int port) {
+        seeds.add(new ClientInfo(new SocketInfo(ip, port)));
     }
 }

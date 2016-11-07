@@ -11,6 +11,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -111,7 +112,7 @@ public class ServerHandler implements Runnable {
         final short port = inputStream.readShort();
         final int filesCount = inputStream.readInt();
 
-        final ArrayList<Integer> files = new ArrayList<>();
+        final Set<Integer> files = new HashSet<>();
         for (int i = 0; i < filesCount; i++) {
             files.add(inputStream.readInt());
         }

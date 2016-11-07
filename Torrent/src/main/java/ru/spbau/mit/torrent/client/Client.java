@@ -1,5 +1,6 @@
 package ru.spbau.mit.torrent.client;
 
+import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
 import ru.spbau.mit.torrent.client.storage.BlockFile;
 import ru.spbau.mit.torrent.client.storage.FileInfo;
 import ru.spbau.mit.torrent.client.utils.OnDownload;
@@ -10,13 +11,17 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /*
-1. updater
+TODO: update request
  */
 
 public class Client {
     private static final String CLIENT_CONFIG_PATH = "client.config";
+    private static final int UPDATE_TIMEOUT = 5;
 
     private final Socket serverConnection;
 
@@ -25,11 +30,14 @@ public class Client {
 
     private final Seeder seeder;
     private final Downloader downloader;
+    private final int port;
 
     private ConcurrentHashMap<Integer, BlockFile> files = new ConcurrentHashMap<>();
     private final HashMap<Integer, FileInfo> catalog = new HashMap<>();
+    private final Timer timer = new Timer();
 
-    public Client(short port, String serverIp, short serverPort, OnDownload onDownload) throws IOException, ClassNotFoundException {
+    public Client(int port, String serverIp, int serverPort, OnDownload onDownload) throws IOException, ClassNotFoundException {
+        this.port = port;
         serverConnection = new Socket(serverIp, serverPort);
         outputStream = new DataOutputStream(serverConnection.getOutputStream());
         inputStream = new DataInputStream(serverConnection.getInputStream());
@@ -49,9 +57,20 @@ public class Client {
                 throw new RuntimeException(e);
             }
         });
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    update();
+                } catch (Exception e) {
+                    System.out.printf("Failed to update: %s%n", e.getMessage());
+                }
+            }
+        }, 0, MINUTES.toMillis(UPDATE_TIMEOUT));
     }
 
-    public HashMap<Integer, FileInfo> listFiles() throws IOException {
+    public synchronized HashMap<Integer, FileInfo> listFiles() throws IOException {
         outputStream.writeByte(ClientType.LIST.toByte());
         outputStream.flush();
 
@@ -69,7 +88,7 @@ public class Client {
         return catalog;
     }
 
-    public void upload(String path) throws IOException {
+    public synchronized void upload(String path) throws IOException, UpdateFailedException {
         final File file = new File(path);
         if (!file.exists() || file.isDirectory()) {
             throw new FileNotFoundException(path);
@@ -82,9 +101,34 @@ public class Client {
 
         final int id = inputStream.readInt();
         files.put(id, new BlockFile(file, file.length(), id));
+
+        update();
     }
 
-    public void download(int id, String destination) throws IOException {
+    private synchronized void update() throws IOException, UpdateFailedException {
+        outputStream.writeByte(ClientType.UPDATE.toByte());
+        outputStream.writeShort(port);
+        final Enumeration<Integer> keys = files.keys();
+        final Set<Integer> toSend = new HashSet<>();
+
+        while (keys.hasMoreElements()) {
+            toSend.add(keys.nextElement());
+        }
+
+        outputStream.writeInt(toSend.size());
+        for (int key : toSend) {
+            outputStream.writeInt(key);
+        }
+
+        outputStream.flush();
+
+        boolean status = inputStream.readBoolean();
+        if (!status) {
+            throw new UpdateFailedException();
+        }
+    }
+
+    public synchronized void download(int id, String destination) throws IOException {
         if (!catalog.containsKey(id)) {
             throw new IndexOutOfBoundsException();
         }
@@ -96,7 +140,9 @@ public class Client {
         downloader.addTask(file, seedList);
     }
 
-    public void stop() {
+    public synchronized void stop() {
+        timer.cancel();
+
         try {
             downloader.close();
             downloader.join();
@@ -145,7 +191,7 @@ public class Client {
         stream.close();
     }
 
-    private List<SocketInfo> getSeedsList(int id) throws IOException {
+    private synchronized List<SocketInfo> getSeedsList(int id) throws IOException {
         outputStream.writeByte(ClientType.SOURCES.toByte());
         outputStream.writeInt(id);
         outputStream.flush();

@@ -19,7 +19,7 @@ public enum ClientType {
             case 4:
                 return UPDATE;
             default:
-                throw new IllegalArgumentException(String.format("Unknown command: %b", id));
+                throw new IllegalArgumentException(String.format("Unknown command: %d", id));
         }
     }
 

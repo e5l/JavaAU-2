@@ -1,5 +1,6 @@
 package ru.spbau.mit.torrent.client;
 
+import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
 import ru.spbau.mit.torrent.client.storage.FileInfo;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class ClientREPL {
         client.stop();
     }
 
-    private static boolean evaluateCommand() throws IOException {
+    private static boolean evaluateCommand() throws IOException, UpdateFailedException {
         String command = scanner.nextLine();
         String[] commandWithArgs = command.split(" ", 2);
         if (commandWithArgs.length == 0) {

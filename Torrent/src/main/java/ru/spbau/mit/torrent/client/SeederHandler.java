@@ -12,13 +12,13 @@ import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientHandler implements Runnable {
+public class SeederHandler implements Runnable {
     private final Socket client;
     final DataInputStream inputStream;
     final DataOutputStream outputStream;
     private final ConcurrentHashMap<Integer, BlockFile> files;
 
-    public ClientHandler(Socket client, ConcurrentHashMap<Integer, BlockFile> files) throws IOException {
+    public SeederHandler(Socket client, ConcurrentHashMap<Integer, BlockFile> files) throws IOException {
         this.client = client;
         this.files = files;
         inputStream = new DataInputStream(client.getInputStream());
@@ -27,34 +27,36 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        while (!client.isClosed()) {
+        try {
+            final P2PType type = P2PType.fromByte(inputStream.readByte());
+            switch (type) {
+                case STAT:
+                    stat();
+                    break;
+                case GET:
+                    get();
+                    break;
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Client request missing file");
+        } catch (PartNotFoundException e) {
+            System.out.println("Client request missing part");
+        } catch (IOException e) {
+            System.out.printf("Couldn't process client request: %s%n", e.getMessage());
+        } finally {
             try {
-                final P2PType type = P2PType.fromByte(inputStream.readByte());
-                switch (type) {
-                    case STAT:
-                        stat();
-                        break;
-                    case GET:
-                        get();
-                        break;
-                }
-
-            } catch (FileNotFoundException e) {
-                System.out.println("Client request missing file");
-            } catch (PartNotFoundException e) {
-                System.out.println("Client request missing part");
+                client.close();
             } catch (IOException e) {
-                System.out.printf("Couldn't process client request: %s%n", e.getMessage());
+                System.out.println("Failed to close client");
             }
         }
-
     }
 
     public void close() throws IOException {
         client.close();
     }
 
-    private void stat() throws IOException, PartNotFoundException {
+    private void stat() throws IOException {
         final int id = inputStream.readInt();
 
         if (!files.containsKey(id)) {
@@ -87,7 +89,7 @@ public class ClientHandler implements Runnable {
         }
 
         final BlockFile blockFile = files.get(id);
-        if (!blockFile.getRemainingBlocks().contains(part)) {
+        if (blockFile.getRemainingBlocks().contains(part)) {
             throw new PartNotFoundException();
         }
 

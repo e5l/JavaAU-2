@@ -1,6 +1,8 @@
 package ru.spbau.mit.torrent.client.storage;
 
-public class FileInfo {
+import java.io.Serializable;
+
+public class FileInfo implements Serializable {
     public final int id;
     public final long size;
     public final String name;
@@ -10,4 +12,17 @@ public class FileInfo {
         this.size = size;
         this.name = name;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof FileInfo)) {
+            return false;
+        }
+
+        FileInfo instance = (FileInfo) o;
+        return instance.id == id &&
+                instance.size == size &&
+                instance.name.equals(name);
+    }
+
 }

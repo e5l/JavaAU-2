@@ -20,16 +20,13 @@ public class BlockFile implements Serializable {
         this.origin = file;
         this.id = id;
         this.blocksCount = (int) Math.ceil(1.0 * length / BLOCK_SIZE);
-        this.file = new RandomAccessFile(file, "rw");
-
         if (!file.exists()) {
-            file.createNewFile();
-            this.file.setLength(length);
-
-            for (int i = 0; i < BLOCK_SIZE; i++) {
+            for (int i = 0; i < blocksCount; i++) {
                 remainingBlocks.add(i);
             }
         }
+        this.file = new RandomAccessFile(file, "rw");
+        this.file.setLength(length);
     }
 
     public synchronized boolean isAvailable(int block) {
@@ -37,18 +34,21 @@ public class BlockFile implements Serializable {
     }
 
     public synchronized byte[] readBlock(int id) throws IOException {
-        int size = getBlockSize(id);
-        byte[] result = new byte[BLOCK_SIZE];
-        int offset = id * BLOCK_SIZE;
+        final int size = getBlockSize(id);
+        final byte[] result = new byte[BLOCK_SIZE];
+        final int offset = id * BLOCK_SIZE;
 
-        file.read(result, offset, size);
+        file.seek(offset);
+        file.read(result, 0, size);
         return result;
     }
 
     public synchronized void writeBlock(int id, byte[] block) throws IOException {
-        int size = getBlockSize(id);
-        int offset = id * BLOCK_SIZE;
-        file.write(block, offset, size);
+        final int size = getBlockSize(id);
+        final int offset = id * BLOCK_SIZE;
+
+        file.seek(offset);
+        file.write(block, 0, size);
         remainingBlocks.remove(id);
     }
 

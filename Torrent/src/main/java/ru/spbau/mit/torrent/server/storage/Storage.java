@@ -23,14 +23,18 @@ public class Storage implements Serializable {
         return seeds;
     }
 
-    public synchronized boolean update(byte[] ip, int port, ArrayList<Integer> files) {
+    public synchronized boolean update(byte[] ip, int port, Set<Integer> files) {
         SocketInfo info = new SocketInfo(ip, port);
         if (users.containsKey(info)) {
             users.get(info).update();
             return true;
         }
 
-        ClientInfo clientInfo = new ClientInfo(new int[]{}, info);
+        for (int file : files) {
+            index.get(file).addSeed(ip, port);
+        }
+
+        ClientInfo clientInfo = new ClientInfo(info);
         users.put(info, clientInfo);
         return true;
     }

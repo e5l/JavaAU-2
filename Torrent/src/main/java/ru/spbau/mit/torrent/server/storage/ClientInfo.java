@@ -4,15 +4,13 @@ import java.util.Date;
 
 public class ClientInfo {
     public final long LIVE_TIME = 5 * 60 * 1000;
-    public final int[] files;
     public final SocketInfo socket;
 
     private Date update_time;
 
-    public ClientInfo(int[] files, SocketInfo socket) {
+    public ClientInfo(SocketInfo socket) {
         update_time = new Date();
 
-        this.files = files;
         this.socket = socket;
     }
 

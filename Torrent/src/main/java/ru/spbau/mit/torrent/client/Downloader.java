@@ -19,15 +19,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Downloader extends Thread {
     final ConcurrentLinkedQueue<Pair<BlockFile, List<SocketInfo>>> tasks = new ConcurrentLinkedQueue<>();
+    private final OnDownload onDownload;
     volatile boolean closed = false;
 
     public Downloader(OnDownload onDownload) {
+        this.onDownload = onDownload;
     }
 
     @Override
     public void run() {
-        while (tasks.size() > 0 && !closed) {
+        while (!closed) {
             final Pair<BlockFile, List<SocketInfo>> task = tasks.poll();
+            if (task == null) {
+                continue;
+            }
+
             try {
                 process(task.first, task.second);
             } catch (IOException e) {
@@ -53,6 +59,10 @@ public class Downloader extends Thread {
                 }
             }
         }
+
+        if (file.getRemainingBlocksSize() == 0) {
+            onDownload.onDownload(file);
+        }
     }
 
 
@@ -71,6 +81,7 @@ public class Downloader extends Thread {
             final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
             outputStream.writeByte(P2PType.STAT.toByte());
+            outputStream.writeInt(id);
             outputStream.flush();
             final int count = inputStream.readInt();
 
@@ -84,9 +95,13 @@ public class Downloader extends Thread {
 
     private byte[] downloadBlock(SocketInfo seed, Integer id, Integer block) throws IOException {
         byte[] ip = seed.ip;
-        try (Socket socket = new Socket(String.format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]), seed.port)) {
-            final DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+        Socket socket = null;
+        DataInputStream inputStream;
+        DataOutputStream outputStream;
+        try {
+            socket = new Socket(String.format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]), seed.port);
+            inputStream = new DataInputStream(socket.getInputStream());
+            outputStream = new DataOutputStream(socket.getOutputStream());
 
             outputStream.writeByte(P2PType.GET.toByte());
             outputStream.writeInt(id);
@@ -97,6 +112,10 @@ public class Downloader extends Thread {
             inputStream.read(result);
 
             return result;
+        } finally {
+            if (socket != null) {
+                socket.close();
+            }
         }
     }
 }

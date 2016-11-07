@@ -21,7 +21,7 @@ public class Seeder implements Runnable {
         while (!socket.isClosed()) {
             try {
                 final Socket client = socket.accept();
-                new Thread(new ClientHandler(client, files));
+                new Thread(new SeederHandler(client, files)).start();
             } catch (IOException e) {
                 System.out.println("Failed to process client");
             }
