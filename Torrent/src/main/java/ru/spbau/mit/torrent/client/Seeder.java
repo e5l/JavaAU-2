@@ -1,6 +1,6 @@
 package ru.spbau.mit.torrent.client;
 
-import ru.spbau.mit.torrent.client.storage.BlockFile;
+import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.utils.net.SocketServer;
 
 import java.io.IOException;

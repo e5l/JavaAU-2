@@ -1,4 +1,4 @@
-package ru.spbau.mit.torrent.server.storage;
+package ru.spbau.mit.torrent.storage;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -1,6 +1,6 @@
 package ru.spbau.mit.torrent.client;
 
-import ru.spbau.mit.torrent.client.storage.BlockFile;
+import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.torrent.protocol.P2PType;
 import ru.spbau.mit.torrent.protocol.p2p.DownloadRequest;
 import ru.spbau.mit.torrent.protocol.p2p.DownloadResponse;
@@ -56,7 +56,7 @@ public class SeederHandler extends DataStreamHandler {
             result.add(i);
         }
 
-        new StatResponse(remainingBlocks).write(outputStream);
+        new StatResponse(result).write(outputStream);
     }
 
     private void get() throws IOException  {

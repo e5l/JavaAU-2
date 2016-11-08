@@ -2,8 +2,8 @@ package ru.spbau.mit.torrent.server;
 
 import ru.spbau.mit.torrent.protocol.ClientServer.*;
 import ru.spbau.mit.torrent.protocol.ClientType;
-import ru.spbau.mit.torrent.server.storage.SocketInfo;
-import ru.spbau.mit.torrent.server.storage.Storage;
+import ru.spbau.mit.torrent.storage.SocketInfo;
+import ru.spbau.mit.torrent.storage.Storage;
 import ru.spbau.mit.utils.net.DataStreamHandler;
 
 import java.io.IOException;

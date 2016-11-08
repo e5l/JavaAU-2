@@ -1,7 +1,7 @@
 package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
-import ru.spbau.mit.torrent.server.storage.FileInfo;
+import ru.spbau.mit.torrent.storage.FileInfo;
 
 import java.io.IOException;
 import java.util.Map;

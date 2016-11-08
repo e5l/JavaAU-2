@@ -1,11 +1,11 @@
 package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
-import ru.spbau.mit.torrent.client.storage.BlockFile;
 import ru.spbau.mit.torrent.client.utils.OnDownload;
 import ru.spbau.mit.torrent.protocol.ClientServer.*;
-import ru.spbau.mit.torrent.server.storage.FileInfo;
-import ru.spbau.mit.torrent.server.storage.SocketInfo;
+import ru.spbau.mit.torrent.storage.BlockFile;
+import ru.spbau.mit.torrent.storage.FileInfo;
+import ru.spbau.mit.torrent.storage.SocketInfo;
 import ru.spbau.mit.utils.net.DataStreamClient;
 
 import java.io.*;
@@ -29,7 +29,7 @@ public class Client extends DataStreamClient {
     private Map<Integer, FileInfo> catalog = new HashMap<>();
 
     private final Seeder seeder;
-    private final Downloader downloader;
+    private Downloader downloader;
 
     public Client(int seederPort, String serverIp, int serverPort, OnDownload onDownload) throws IOException {
         super(new Socket(serverIp, serverPort));
@@ -38,7 +38,8 @@ public class Client extends DataStreamClient {
         seeder = new Seeder(files, seederPort);
         downloader = new Downloader(file -> {
             if (file.getRemainingBlocksSize() > 0) {
-                // TODO
+                final Set<SocketInfo> seeds = getSeedsList(file.getId());
+                downloader.addTask(file, seeds);
             } else {
                 onDownload.onDownload(file);
             }
@@ -47,6 +48,7 @@ public class Client extends DataStreamClient {
         addUnfinishedTasks();
         scheduleUpdate();
     }
+
 
     public synchronized Map<Integer, FileInfo> listFiles() throws IOException {
         new ListRequest().write(outputStream);
@@ -64,6 +66,7 @@ public class Client extends DataStreamClient {
         new UploadRequest(file.getName(), file.length()).write(outputStream);
         final UploadResponse response = UploadResponse.readFrom(inputStream);
         files.put(response.id, new BlockFile(file, file.length(), response.id));
+
         update();
     }
 

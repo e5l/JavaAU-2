@@ -1,7 +1,7 @@
 package ru.spbau.mit.torrent.protocol.ClientServer;
 
 import ru.spbau.mit.torrent.protocol.IMessage;
-import ru.spbau.mit.torrent.server.storage.FileInfo;
+import ru.spbau.mit.torrent.storage.FileInfo;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

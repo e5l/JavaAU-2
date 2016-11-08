@@ -34,22 +34,16 @@ public abstract class DataStreamHandler implements Runnable {
         try {
             inputStream.close();
         } catch (IOException e) {
-            // TODO
-            System.out.println(e.getMessage());
         }
 
         try {
             outputStream.close();
         } catch (IOException e) {
-            // TODO
-            System.out.println(e.getMessage());
         }
 
         try {
             socket.close();
         } catch (IOException e) {
-            // TODO
-            System.out.println(e.getMessage());
         }
 
         onStop();

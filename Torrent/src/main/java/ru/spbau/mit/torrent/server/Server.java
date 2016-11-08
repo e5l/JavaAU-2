@@ -1,6 +1,6 @@
 package ru.spbau.mit.torrent.server;
 
-import ru.spbau.mit.torrent.server.storage.Storage;
+import ru.spbau.mit.torrent.storage.Storage;
 import ru.spbau.mit.utils.net.SocketServer;
 
 import java.io.*;

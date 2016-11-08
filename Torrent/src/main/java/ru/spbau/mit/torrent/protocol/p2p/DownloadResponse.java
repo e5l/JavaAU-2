@@ -1,6 +1,6 @@
 package ru.spbau.mit.torrent.protocol.p2p;
 
-import ru.spbau.mit.torrent.client.storage.BlockFile;
+import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.torrent.protocol.IMessage;
 
 import java.io.DataInputStream;

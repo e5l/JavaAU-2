@@ -4,7 +4,7 @@ import org.junit.rules.TemporaryFolder;
 import ru.spbau.mit.torrent.client.Client;
 import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
 import ru.spbau.mit.torrent.server.Server;
-import ru.spbau.mit.torrent.server.storage.FileInfo;
+import ru.spbau.mit.torrent.storage.FileInfo;
 
 import java.io.File;
 import java.io.IOException;

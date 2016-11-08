@@ -1,10 +1,10 @@
-package ru.spbau.mit.torrent.server.storage;
+package ru.spbau.mit.torrent.storage;
 
 import java.io.Serializable;
 import java.util.*;
 
 public class Storage implements Serializable {
-    private final HashMap<SocketInfo, ClientInfo> users = new HashMap<>();
+    private final Map<SocketInfo, ClientInfo> users = new HashMap<>();
     private final ArrayList<FileInfo> index = new ArrayList<>();
 
     public synchronized List<FileInfo> list() {
@@ -27,7 +27,6 @@ public class Storage implements Serializable {
         SocketInfo info = new SocketInfo(ip, port);
         if (users.containsKey(info)) {
             users.get(info).update();
-            return true;
         }
 
         for (int file : files) {

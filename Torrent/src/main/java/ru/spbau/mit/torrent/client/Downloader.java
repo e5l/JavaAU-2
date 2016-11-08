@@ -1,12 +1,12 @@
 package ru.spbau.mit.torrent.client;
 
-import ru.spbau.mit.torrent.client.storage.BlockFile;
+import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.torrent.client.utils.OnDownload;
 import ru.spbau.mit.torrent.protocol.p2p.DownloadRequest;
 import ru.spbau.mit.torrent.protocol.p2p.DownloadResponse;
 import ru.spbau.mit.torrent.protocol.p2p.StatRequest;
 import ru.spbau.mit.torrent.protocol.p2p.StatResponse;
-import ru.spbau.mit.torrent.server.storage.SocketInfo;
+import ru.spbau.mit.torrent.storage.SocketInfo;
 import ru.spbau.mit.utils.Pair;
 
 import java.io.DataInputStream;
@@ -65,9 +65,7 @@ public class Downloader implements Runnable {
             }
         }
 
-        if (file.getRemainingBlocksSize() == 0) {
-            onDownload.onDownload(file);
-        }
+        onDownload.onDownload(file);
     }
 
     public void addTask(BlockFile file, Set<SocketInfo> seedList) {

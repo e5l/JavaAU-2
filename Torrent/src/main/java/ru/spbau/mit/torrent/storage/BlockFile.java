@@ -1,4 +1,4 @@
-package ru.spbau.mit.torrent.client.storage;
+package ru.spbau.mit.torrent.storage;
 
 import java.io.File;
 import java.io.IOException;

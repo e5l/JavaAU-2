@@ -20,22 +20,16 @@ public class DataStreamClient {
         try {
             outputStream.close();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
 
         try {
             inputStream.close();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
 
         try {
             socket.close();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
     }
 
