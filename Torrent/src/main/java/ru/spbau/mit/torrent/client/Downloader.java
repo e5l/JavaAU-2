@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Downloader implements Runnable {
     private final Thread downloaderThread;
-    final ConcurrentLinkedQueue<Pair<BlockFile, Set<SocketInfo>>> tasks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Pair<BlockFile, Set<SocketInfo>>> tasks = new ConcurrentLinkedQueue<>();
     private final OnDownload onDownload;
     private volatile boolean closed;
 
@@ -77,8 +77,6 @@ public class Downloader implements Runnable {
         try {
             downloaderThread.join();
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
     }
 

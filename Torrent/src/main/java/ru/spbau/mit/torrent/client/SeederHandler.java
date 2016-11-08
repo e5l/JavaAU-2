@@ -68,7 +68,7 @@ public class SeederHandler extends DataStreamHandler {
 
         final BlockFile blockFile = files.get(request.id);
         if (blockFile.getRemainingBlocks().contains((request.block))) {
-            // TODO: log error
+            System.out.printf("Invalid request: (fileId: %d, blockId: %d) not found %n", request.id, request.block);
             return;
         }
 

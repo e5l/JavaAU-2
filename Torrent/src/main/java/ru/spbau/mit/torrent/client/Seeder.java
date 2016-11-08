@@ -11,7 +11,7 @@ public class Seeder extends SocketServer {
     private final Thread seederThread;
     private final ConcurrentHashMap<Integer, BlockFile> files;
 
-    public Seeder(ConcurrentHashMap<Integer, BlockFile> files, int port) throws IOException {
+    public Seeder(ConcurrentHashMap<Integer, BlockFile> files, int port) {
         super(port);
         this.files = files;
 
@@ -24,8 +24,6 @@ public class Seeder extends SocketServer {
         try {
             new Thread(new SeederHandler(client, files)).start();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
     }
 
@@ -35,8 +33,6 @@ public class Seeder extends SocketServer {
         try {
             seederThread.join();
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
     }
 

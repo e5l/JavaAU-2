@@ -8,6 +8,7 @@ public class Storage implements Serializable {
     private final ArrayList<FileInfo> index = new ArrayList<>();
 
     public synchronized List<FileInfo> list() {
+        //noinspection unchecked
         return (ArrayList<FileInfo>) index.clone();
     }
 

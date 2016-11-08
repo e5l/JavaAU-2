@@ -15,7 +15,7 @@ public class BlockFile implements Serializable {
     private final File origin;
     private final RandomAccessFile file;
     private final int blocksCount;
-    private Set<Integer> remainingBlocks = new HashSet<>();
+    private final Set<Integer> remainingBlocks = new HashSet<>();
 
     public BlockFile(File file, long length, int id) throws IOException {
         this.origin = file;

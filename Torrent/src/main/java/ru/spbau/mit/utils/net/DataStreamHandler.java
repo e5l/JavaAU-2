@@ -10,7 +10,7 @@ public abstract class DataStreamHandler implements Runnable {
     protected final DataInputStream inputStream;
     protected final Socket socket;
 
-    public DataStreamHandler(Socket socket) throws IOException {
+    protected DataStreamHandler(Socket socket) throws IOException {
         this.socket = socket;
         outputStream = new DataOutputStream(socket.getOutputStream());
         inputStream = new DataInputStream(socket.getInputStream());
@@ -23,8 +23,6 @@ public abstract class DataStreamHandler implements Runnable {
                 processCommand();
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         } finally {
             stopJobs();
         }
@@ -50,5 +48,4 @@ public abstract class DataStreamHandler implements Runnable {
     }
 
     protected void processCommand() throws IOException {}
-    protected void onStop() {}
 }

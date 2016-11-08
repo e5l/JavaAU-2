@@ -7,11 +7,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * TODO: проблема с тем что подходящих сидов нет но могут потом появится, как сделать перезапрос сидов
- * TODO: тесты
- */
-
 public class ClientREPL {
     private final static Scanner scanner = new Scanner(System.in);
     private static final String SERVER_ADDRESS = "127.0.0.1";

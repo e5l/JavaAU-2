@@ -1,15 +1,13 @@
 package ru.spbau.mit.torrent.server;
 
 import ru.spbau.mit.torrent.storage.Storage;
+import ru.spbau.mit.utils.net.DataStreamHandler;
 import ru.spbau.mit.utils.net.SocketServer;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.LinkedList;
 
-/**
- * TODO: удаление клиентов по таймауту
- */
 public class Server extends SocketServer {
     private final LinkedList<ServerHandler> clients = new LinkedList<>();
     private final Thread current;
@@ -38,15 +36,11 @@ public class Server extends SocketServer {
 
     @Override
     protected void stopJobs() {
-        for (ServerHandler client : clients) {
-            client.stopJobs();
-        }
+        clients.forEach(DataStreamHandler::stopJobs);
 
         try {
             socket.close();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
 
         save();
@@ -57,8 +51,6 @@ public class Server extends SocketServer {
         try {
             current.join();
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-            // TODO
         }
     }
 
@@ -72,9 +64,9 @@ public class Server extends SocketServer {
         try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file))) {
             return (Storage) stream.readObject();
         } catch (ClassNotFoundException e) {
-            // TODO
+            // Never happened
         } catch (IOException e) {
-            // TODO
+            System.out.printf("Server snapshot corruption: %s%n", e.getMessage());
         }
 
         return null;

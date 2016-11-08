@@ -1,14 +1,12 @@
 package ru.spbau.mit.torrent.protocol;
 
-import java.io.IOException;
-
 public enum ClientType {
     LIST,
     UPLOAD,
     SOURCES,
     UPDATE;
 
-    public static ClientType fromByte(byte id) throws IOException {
+    public static ClientType fromByte(byte id) {
         switch (id) {
             case 1:
                 return LIST;

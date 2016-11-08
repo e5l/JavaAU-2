@@ -39,11 +39,6 @@ public class ServerHandler extends DataStreamHandler {
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
     private void list() throws IOException {
         new ListResponse(storage.list()).write(outputStream);
     }

@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 public class TorrentTests {
 
     @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+    public final TemporaryFolder folder = new TemporaryFolder();
 
     @Test
     public void listingTest() throws IOException, ClassNotFoundException, InterruptedException, UpdateFailedException {
@@ -62,7 +62,7 @@ public class TorrentTests {
         server.stop();
     }
 
-    public File createFolder(String name) throws IOException {
+    private File createFolder(String name) throws IOException {
         return folder.newFolder(name);
     }
 

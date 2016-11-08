@@ -1,12 +1,10 @@
 package ru.spbau.mit.torrent.protocol;
 
-import java.io.IOException;
-
 public enum P2PType {
     STAT,
     GET;
 
-    public static P2PType fromByte(byte id) throws IOException {
+    public static P2PType fromByte(byte id) {
         switch (id) {
             case 1:
                 return STAT;

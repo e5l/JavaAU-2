@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class ClientInfo implements Serializable {
-    public final long LIVE_TIME = 5 * 60 * 1000;
+    private final long LIVE_TIME = 5 * 60 * 1000;
     public final SocketInfo socket;
 
     private Date update_time = new Date();

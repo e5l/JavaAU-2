@@ -13,7 +13,7 @@ public abstract class SocketServer implements Runnable {
     private final int port;
     protected ServerSocket socket;
 
-    public SocketServer(int port) {
+    protected SocketServer(int port) {
         this.port = port;
     }
 

@@ -16,10 +16,6 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-/*
-TODO: update request
- */
-
 public class Client extends DataStreamClient {
     private static final String CLIENT_CONFIG_PATH = "client.config";
     private static final int UPDATE_TIMEOUT = 5;
@@ -124,10 +120,10 @@ public class Client extends DataStreamClient {
         }
 
         try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file))) {
+            //noinspection unchecked
             files = (ConcurrentHashMap<Integer, BlockFile>) stream.readObject();
         } catch (ClassNotFoundException e) {
-            // TODO
-            System.out.println(e.getMessage());
+            // Never happened
         }
     }
 
@@ -139,8 +135,7 @@ public class Client extends DataStreamClient {
             }
             stream.writeObject(files);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            // TODO
+            System.out.printf("Failed to save client snapshot: %s%n", e.getMessage());
         }
     }
 

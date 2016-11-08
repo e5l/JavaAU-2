@@ -8,9 +8,9 @@ import java.net.Socket;
 public class DataStreamClient {
     protected final DataInputStream inputStream;
     protected final DataOutputStream outputStream;
-    protected final Socket socket;
+    private final Socket socket;
 
-    public DataStreamClient(Socket socket) throws IOException {
+    protected DataStreamClient(Socket socket) throws IOException {
         this.socket = socket;
         inputStream = new DataInputStream(socket.getInputStream());
         outputStream = new DataOutputStream(socket.getOutputStream());
