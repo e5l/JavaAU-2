@@ -17,18 +17,20 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class Client extends DataStreamClient {
-    private static final String CLIENT_CONFIG_PATH = "client.config";
+    private static final String CLIENT_CONFIG_NAME = "client.config";
     private static final int UPDATE_TIMEOUT = 5;
 
     private final Timer timer = new Timer();
+    private final String configPath;
     private ConcurrentHashMap<Integer, BlockFile> files = new ConcurrentHashMap<>();
     private Map<Integer, FileInfo> catalog = new HashMap<>();
 
     private final Seeder seeder;
     private Downloader downloader;
 
-    public Client(int seederPort, String serverIp, int serverPort, OnDownload onDownload) throws IOException {
+    public Client(int seederPort, String serverIp, int serverPort, OnDownload onDownload, String configPath) throws IOException {
         super(new Socket(serverIp, serverPort));
+        this.configPath = configPath;
         load();
 
         seeder = new Seeder(files, seederPort);
@@ -114,7 +116,7 @@ public class Client extends DataStreamClient {
     }
 
     private void load() throws IOException {
-        final File file = new File(CLIENT_CONFIG_PATH);
+        final File file = new File(configPath, CLIENT_CONFIG_NAME);
         if (!file.exists() || file.isDirectory()) {
             return;
         }
@@ -128,7 +130,7 @@ public class Client extends DataStreamClient {
     }
 
     private void save() {
-        final File file = new File(CLIENT_CONFIG_PATH);
+        final File file = new File(configPath, CLIENT_CONFIG_NAME);
         try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(file))) {
             if (!file.exists()) {
                 file.createNewFile();

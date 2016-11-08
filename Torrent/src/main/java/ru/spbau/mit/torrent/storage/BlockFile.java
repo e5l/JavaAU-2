@@ -12,13 +12,12 @@ public class BlockFile implements Serializable {
     public static final int BLOCK_SIZE = 1024;
 
     private final int id;
-    private final File origin;
-    private final RandomAccessFile file;
+    private final File file;
     private final int blocksCount;
-    private final Set<Integer> remainingBlocks = new HashSet<>();
+    private final HashSet<Integer> remainingBlocks = new HashSet<>();
 
     public BlockFile(File file, long length, int id) throws IOException {
-        this.origin = file;
+        this.file = file;
         this.id = id;
         this.blocksCount = (int) Math.ceil(1.0 * length / BLOCK_SIZE);
         if (!file.exists()) {
@@ -26,8 +25,8 @@ public class BlockFile implements Serializable {
                 remainingBlocks.add(i);
             }
         }
-        this.file = new RandomAccessFile(file, "rw");
-        this.file.setLength(length);
+        RandomAccessFile raFile = new RandomAccessFile(file, "rw");
+        raFile.setLength(length);
     }
 
     public synchronized boolean isAvailable(int block) {
@@ -39,8 +38,9 @@ public class BlockFile implements Serializable {
         final byte[] result = new byte[BLOCK_SIZE];
         final int offset = id * BLOCK_SIZE;
 
-        file.seek(offset);
-        file.read(result, 0, size);
+        final RandomAccessFile raFile = new RandomAccessFile(file, "rw");
+        raFile.seek(offset);
+        raFile.read(result, 0, size);
         return result;
     }
 
@@ -48,8 +48,9 @@ public class BlockFile implements Serializable {
         final int size = getBlockSize(id);
         final int offset = id * BLOCK_SIZE;
 
-        file.seek(offset);
-        file.write(block, 0, size);
+        final RandomAccessFile raFile = new RandomAccessFile(file, "rw");
+        raFile.seek(offset);
+        raFile.write(block, 0, size);
         remainingBlocks.remove(id);
     }
 
@@ -77,7 +78,7 @@ public class BlockFile implements Serializable {
 
     @Override
     public String toString() {
-        return origin.getName();
+        return file.getName();
     }
 
     public int getId() {

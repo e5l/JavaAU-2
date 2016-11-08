@@ -21,7 +21,7 @@ public class ClientREPL {
         }
 
         try {
-            client = new Client(port, SERVER_ADDRESS, SERVER_PORT, file -> System.out.printf("Downloaded: %s%n", file));
+            client = new Client(port, SERVER_ADDRESS, SERVER_PORT, file -> System.out.printf("Downloaded: %s%n", file), System.getProperty("user.dir"));
         } catch (IOException e) {
             System.out.println("Couldn't connect to server: " + e.getMessage());
         }
