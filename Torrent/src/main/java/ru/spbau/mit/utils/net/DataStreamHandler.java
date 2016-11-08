@@ -44,7 +44,6 @@ public abstract class DataStreamHandler implements Runnable {
         } catch (IOException e) {
         }
 
-        onStop();
     }
 
     protected void processCommand() throws IOException {}
