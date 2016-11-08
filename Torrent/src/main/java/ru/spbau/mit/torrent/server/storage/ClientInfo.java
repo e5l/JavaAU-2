@@ -1,16 +1,15 @@
 package ru.spbau.mit.torrent.server.storage;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class ClientInfo {
+public class ClientInfo implements Serializable {
     public final long LIVE_TIME = 5 * 60 * 1000;
     public final SocketInfo socket;
 
-    private Date update_time;
+    private Date update_time = new Date();
 
     public ClientInfo(SocketInfo socket) {
-        update_time = new Date();
-
         this.socket = socket;
     }
 

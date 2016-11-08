@@ -1,10 +1,11 @@
 package ru.spbau.mit.torrent.server.storage;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class FileInfo {
+public class FileInfo implements Serializable {
     public final int id;
     public final String name;
     public final long size;
@@ -24,9 +25,13 @@ public class FileInfo {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof FileInfo &&
-                ((FileInfo) o).name.equals(name) &&
-                ((FileInfo) o).size == size;
+        if (!(o instanceof FileInfo)) {
+            return false;
+        }
+
+        FileInfo info = (FileInfo) o;
+        return info.name.equals(name) &&
+                info.size == size;
     }
 
     public Set<ClientInfo> getActiveSeeds() {

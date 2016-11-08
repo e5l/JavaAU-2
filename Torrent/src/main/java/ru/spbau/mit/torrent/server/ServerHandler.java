@@ -1,59 +1,28 @@
 package ru.spbau.mit.torrent.server;
 
+import ru.spbau.mit.torrent.protocol.ClientServer.*;
 import ru.spbau.mit.torrent.protocol.ClientType;
-import ru.spbau.mit.torrent.server.storage.ClientInfo;
-import ru.spbau.mit.torrent.server.storage.FileInfo;
+import ru.spbau.mit.torrent.server.storage.SocketInfo;
 import ru.spbau.mit.torrent.server.storage.Storage;
+import ru.spbau.mit.utils.net.DataStreamHandler;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ServerHandler implements Runnable {
-    private final Socket connection;
-    private final DataInputStream inputStream;
-    private final DataOutputStream outputStream;
+public class ServerHandler extends DataStreamHandler {
+
     private final Storage storage;
 
     public ServerHandler(Socket connection, Storage storage) throws IOException {
-        this.connection = connection;
+        super(connection);
         this.storage = storage;
-        inputStream = new DataInputStream(connection.getInputStream());
-        outputStream = new DataOutputStream(connection.getOutputStream());
     }
 
     @Override
-    public void run() {
-        try {
-            while (!connection.isClosed()) {
-                evalCommand();
-            }
-        } catch (EOFException e) {
-            System.out.println("Client disconnected");
-        } catch (IOException e) {
-            System.out.println("Failed to execute command: " + e.getMessage());
-        }
-
-        try {
-            connection.close();
-        } catch (IOException e) {
-            System.out.println("Failed to close connection: " + e.getMessage());
-        }
-    }
-
-    public void close() throws IOException {
-        connection.close();
-    }
-
-    private void evalCommand() throws IOException {
+    protected void processCommand() throws IOException {
         final ClientType type = ClientType.fromByte(inputStream.readByte());
-
         switch (type) {
             case LIST:
                 list();
@@ -70,55 +39,30 @@ public class ServerHandler implements Runnable {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
     private void list() throws IOException {
-        final List<FileInfo> response = storage.list();
-
-        outputStream.writeInt(response.size());
-        for (final FileInfo info : response) {
-            outputStream.writeInt(info.id);
-            outputStream.writeUTF(info.name);
-            outputStream.writeLong(info.size);
-        }
-
-        outputStream.flush();
+        new ListResponse(storage.list()).write(outputStream);
     }
 
     private void upload() throws IOException {
-        final String name = inputStream.readUTF();
-        final long size = inputStream.readLong();
-
-        final int id = storage.upload(name, size);
-        outputStream.writeInt(id);
-        outputStream.flush();
+        final UploadRequest request = UploadRequest.readFrom(inputStream);
+        final int id = storage.upload(request.name, request.size);
+        new UploadResponse(id).write(outputStream);
     }
 
     private void sources() throws IOException {
-        final int id = inputStream.readInt();
-        final Set<ClientInfo> sources = storage.sources(id);
-
-        outputStream.writeInt(sources.size());
-        for (ClientInfo info : sources) {
-            for (int i = 0; i < 4; i++) {
-                outputStream.writeByte(info.socket.ip[i]);
-            }
-
-            outputStream.writeShort(info.socket.port);
-        }
-
-        outputStream.flush();
+        final SourcesRequest request = SourcesRequest.readFrom(inputStream);
+        final Set<SocketInfo> sources = storage.sources(request.id).stream().map(it -> it.socket).collect(Collectors.toSet());
+        new SourcesResponse(sources).write(outputStream);
     }
 
     private void update() throws IOException {
-        final short port = inputStream.readShort();
-        final int filesCount = inputStream.readInt();
-
-        final Set<Integer> files = new HashSet<>();
-        for (int i = 0; i < filesCount; i++) {
-            files.add(inputStream.readInt());
-        }
-
-        final boolean status = storage.update(connection.getInetAddress().getAddress(), port, files);
-        outputStream.writeBoolean(status);
+        final UpdateRequest request = UpdateRequest.readFrom(inputStream);
+        final boolean status = storage.update(socket.getInetAddress().getAddress(), request.port, request.files);
+        new UpdateResponse(status).write(outputStream);
     }
-
 }

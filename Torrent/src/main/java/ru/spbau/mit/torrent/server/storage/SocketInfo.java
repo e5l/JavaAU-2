@@ -1,8 +1,10 @@
 package ru.spbau.mit.torrent.server.storage;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class SocketInfo {
+
+public class SocketInfo implements Serializable {
     public final byte[] ip;
     public final int port;
 

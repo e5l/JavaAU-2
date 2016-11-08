@@ -1,50 +1,87 @@
 package ru.spbau.mit.torrent.server;
 
 import ru.spbau.mit.torrent.server.storage.Storage;
+import ru.spbau.mit.utils.net.SocketServer;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
 /**
- * TODO: удаление клиентов по таймаутfileу
+ * TODO: удаление клиентов по таймауту
  */
-public class Server extends Thread {
-    private final int port;
-    private ServerSocket socket;
+public class Server extends SocketServer {
     private final LinkedList<ServerHandler> clients = new LinkedList<>();
+    private final Thread current;
     private final Storage storage;
+    private final String configPath;
 
-    public Server(int port) {
-        this.port = port;
+    public Server(int port, String configPath) {
+        super(port);
+        this.configPath = configPath;
         storage = loadOrCreate();
+
+        current = new Thread(this);
+        current.start();
+    }
+
+    @Override
+    protected void acceptClient(Socket client) {
+        try {
+            ServerHandler handler = new ServerHandler(client, storage);
+            new Thread(handler).start();
+            clients.add(handler);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void stopJobs() {
+        for (ServerHandler client : clients) {
+            client.stopJobs();
+        }
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            // TODO
+        }
+
+        save();
+    }
+
+    public void stop() {
+        stopJobs();
+        try {
+            current.join();
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+            // TODO
+        }
     }
 
     private Storage loadOrCreate() {
-        final String path = System.getProperty("user.dir");
-        final File file = new File(path, "server.storage");
+        final File file = new File(configPath, "server.storage");
 
         if (!file.exists()) {
             return new Storage();
         }
 
-        try {
-            final ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file));
-            Storage result = (Storage) stream.readObject();
-            stream.close();
-            return result;
-        } catch (IOException e) {
-            System.out.println("Failed to read storage state: " + e.getMessage());
-            throw new RuntimeException(e);
+        try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file))) {
+            return (Storage) stream.readObject();
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            // TODO
+        } catch (IOException e) {
+            // TODO
         }
+
+        return null;
     }
 
     private void save() {
-        final String path = System.getProperty("user.dir");
-        final File file = new File(path, "server.storage");
+        final File file = new File(configPath, "server.storage");
 
         if (!file.exists()) {
             try {
@@ -55,35 +92,11 @@ public class Server extends Thread {
             }
         }
 
-        try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file))) {
             objectOutputStream.writeObject(storage);
-            objectOutputStream.close();
         } catch (IOException e) {
             System.out.println("Save error: " + e.getMessage());
         }
     }
 
-    public void run() {
-        try {
-            socket = new ServerSocket(port);
-            while (!socket.isClosed()) {
-                final Socket connection = socket.accept();
-                ServerHandler client = new ServerHandler(connection, storage);
-                new Thread(client).start();
-                clients.add(client);
-            }
-        } catch (IOException e) {
-            System.out.println("SocketInfo: " + e.getMessage());
-        }
-    }
-
-    public void close() throws IOException {
-        for (ServerHandler client : clients) {
-            client.close();
-        }
-
-        socket.close();
-        save();
-    }
 }

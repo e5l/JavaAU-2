@@ -10,11 +10,12 @@ import java.util.Set;
 
 public class BlockFile implements Serializable {
     public static final int BLOCK_SIZE = 1024;
+
+    private final int id;
     private final File origin;
     private final RandomAccessFile file;
     private final int blocksCount;
     private Set<Integer> remainingBlocks = new HashSet<>();
-    public final int id;
 
     public BlockFile(File file, long length, int id) throws IOException {
         this.origin = file;
@@ -77,5 +78,9 @@ public class BlockFile implements Serializable {
     @Override
     public String toString() {
         return origin.getName();
+    }
+
+    public int getId() {
+        return id;
     }
 }

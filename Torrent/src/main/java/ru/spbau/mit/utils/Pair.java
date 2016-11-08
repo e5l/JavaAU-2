@@ -1,4 +1,4 @@
-package ru.spbau.mit.torrent.utils;
+package ru.spbau.mit.utils;
 
 public class Pair<A, B> {
     public final A first;

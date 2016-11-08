@@ -3,11 +3,13 @@ package ru.spbau.mit.torrent.server;
 import java.io.IOException;
 
 public class ServerCLI {
-    public static void main(String[] args) throws IOException {
-        final Server server = new Server(8081);
-        server.start();
+    public static void main(String[] args) throws IOException, InterruptedException {
+        final Server server = new Server(8081, System.getProperty("user.dir"));
+        final Thread serverThread = new Thread(server);
+        serverThread.start();
 
         System.in.read();
-        server.close();
+        server.stop();
+        serverThread.join();
     }
 }

@@ -1,34 +1,46 @@
 package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.storage.BlockFile;
+import ru.spbau.mit.utils.net.SocketServer;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Seeder implements Runnable {
+public class Seeder extends SocketServer {
+    private final Thread seederThread;
     private final ConcurrentHashMap<Integer, BlockFile> files;
-    private final ServerSocket socket;
 
     public Seeder(ConcurrentHashMap<Integer, BlockFile> files, int port) throws IOException {
+        super(port);
         this.files = files;
-        socket = new ServerSocket(port);
+
+        seederThread = new Thread(this);
+        seederThread.start();
     }
 
     @Override
-    public void run() {
-        while (!socket.isClosed()) {
-            try {
-                final Socket client = socket.accept();
-                new Thread(new SeederHandler(client, files)).start();
-            } catch (IOException e) {
-                System.out.println("Failed to process client");
-            }
+    protected void acceptClient(Socket client) {
+        try {
+            new Thread(new SeederHandler(client, files)).start();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            // TODO
         }
     }
 
-    public void close() throws IOException {
-        socket.close();
+    public void stop() {
+        stopJobs();
+
+        try {
+            seederThread.join();
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+            // TODO
+        }
+    }
+
+    public short getPort() {
+        return (short) socket.getLocalPort();
     }
 }

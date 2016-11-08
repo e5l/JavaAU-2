@@ -1,10 +1,10 @@
 package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
-import ru.spbau.mit.torrent.client.storage.FileInfo;
+import ru.spbau.mit.torrent.server.storage.FileInfo;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -29,8 +29,6 @@ public class ClientREPL {
             client = new Client(port, SERVER_ADDRESS, SERVER_PORT, file -> System.out.printf("Downloaded: %s%n", file));
         } catch (IOException e) {
             System.out.println("Couldn't connect to server: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException();
         }
 
         boolean run = true;
@@ -54,7 +52,7 @@ public class ClientREPL {
 
         switch (commandWithArgs[0].toLowerCase()) {
             case "list":
-                HashMap<Integer, FileInfo> files = client.listFiles();
+                Map<Integer, FileInfo> files = client.listFiles();
                 files.entrySet()
                         .forEach(fileInfo -> System.out.println(
                                 String.format("%d: %s; size: %d",

@@ -1,59 +1,34 @@
 package ru.spbau.mit.torrent.client;
 
-import ru.spbau.mit.torrent.client.exceptions.PartNotFoundException;
 import ru.spbau.mit.torrent.client.storage.BlockFile;
 import ru.spbau.mit.torrent.protocol.P2PType;
+import ru.spbau.mit.utils.net.DataStreamHandler;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SeederHandler implements Runnable {
-    private final Socket client;
-    final DataInputStream inputStream;
-    final DataOutputStream outputStream;
+public class SeederHandler extends DataStreamHandler {
     private final ConcurrentHashMap<Integer, BlockFile> files;
 
     public SeederHandler(Socket client, ConcurrentHashMap<Integer, BlockFile> files) throws IOException {
-        this.client = client;
+        super(client);
         this.files = files;
-        inputStream = new DataInputStream(client.getInputStream());
-        outputStream = new DataOutputStream(client.getOutputStream());
     }
 
     @Override
-    public void run() {
-        try {
-            final P2PType type = P2PType.fromByte(inputStream.readByte());
-            switch (type) {
-                case STAT:
-                    stat();
-                    break;
-                case GET:
-                    get();
-                    break;
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Client request missing file");
-        } catch (PartNotFoundException e) {
-            System.out.println("Client request missing part");
-        } catch (IOException e) {
-            System.out.printf("Couldn't process client request: %s%n", e.getMessage());
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                System.out.println("Failed to close client");
-            }
+    protected void processCommand() throws IOException {
+        final P2PType type = P2PType.fromByte(inputStream.readByte());
+        switch (type) {
+            case STAT:
+                stat();
+                break;
+            case GET:
+                get();
+                break;
         }
-    }
-
-    public void close() throws IOException {
-        client.close();
     }
 
     private void stat() throws IOException {
@@ -80,7 +55,7 @@ public class SeederHandler implements Runnable {
         outputStream.flush();
     }
 
-    private void get() throws IOException, PartNotFoundException {
+    private void get() throws IOException  {
         final int id = inputStream.readInt();
         final int part = inputStream.readInt();
 
@@ -90,7 +65,8 @@ public class SeederHandler implements Runnable {
 
         final BlockFile blockFile = files.get(id);
         if (blockFile.getRemainingBlocks().contains(part)) {
-            throw new PartNotFoundException();
+            // TODO: log error
+            return;
         }
 
         byte[] bytes = blockFile.readBlock(part);
