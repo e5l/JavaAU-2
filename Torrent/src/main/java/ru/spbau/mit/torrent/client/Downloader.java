@@ -2,7 +2,10 @@ package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.storage.BlockFile;
 import ru.spbau.mit.torrent.client.utils.OnDownload;
-import ru.spbau.mit.torrent.protocol.P2PType;
+import ru.spbau.mit.torrent.protocol.p2p.DownloadRequest;
+import ru.spbau.mit.torrent.protocol.p2p.DownloadResponse;
+import ru.spbau.mit.torrent.protocol.p2p.StatRequest;
+import ru.spbau.mit.torrent.protocol.p2p.StatResponse;
 import ru.spbau.mit.torrent.server.storage.SocketInfo;
 import ru.spbau.mit.utils.Pair;
 
@@ -10,7 +13,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -88,42 +90,19 @@ public class Downloader implements Runnable {
             final DataInputStream inputStream = new DataInputStream(socket.getInputStream());
             final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
-            outputStream.writeByte(P2PType.STAT.toByte());
-            outputStream.writeInt(id);
-            outputStream.flush();
-            final int count = inputStream.readInt();
-
-            final Set<Integer> result = new HashSet<>();
-            for (int i = 0; i < count; i++) {
-                result.add(inputStream.readInt());
-            }
-            return result;
+            new StatRequest(id).write(outputStream);
+            return StatResponse.readFrom(inputStream).parts;
         }
     }
 
     private byte[] downloadBlock(SocketInfo seed, Integer id, Integer block) throws IOException {
         byte[] ip = seed.ip;
-        Socket socket = null;
-        DataInputStream inputStream;
-        DataOutputStream outputStream;
-        try {
-            socket = new Socket(String.format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]), seed.port);
-            inputStream = new DataInputStream(socket.getInputStream());
-            outputStream = new DataOutputStream(socket.getOutputStream());
+        try (Socket socket = new Socket(String.format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]), seed.port)) {
+            final DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+            final DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 
-            outputStream.writeByte(P2PType.GET.toByte());
-            outputStream.writeInt(id);
-            outputStream.writeInt(block);
-            outputStream.flush();
-
-            byte[] result = new byte[BlockFile.BLOCK_SIZE];
-            inputStream.read(result);
-
-            return result;
-        } finally {
-            if (socket != null) {
-                socket.close();
-            }
+            new DownloadRequest(id, block).write(outputStream);
+            return DownloadResponse.readFrom(inputStream).block;
         }
     }
 }
