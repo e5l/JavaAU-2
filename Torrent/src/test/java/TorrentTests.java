@@ -37,6 +37,7 @@ public class TorrentTests {
         expected.put(0, new FileInfo(0, file.getName(), file.length()));
 
         assertEquals(expected, result);
+        client.stop();
         server.stop();
     }
 
@@ -61,6 +62,8 @@ public class TorrentTests {
         }
         final File result = new File(client2Folder.getAbsolutePath(), "hello.bin");
         assertFileEquals(expected, result);
+        client1.stop();
+        client2.stop();
         server.stop();
     }
 
@@ -85,6 +88,8 @@ public class TorrentTests {
         }
         final File result = new File(client2Folder.getAbsolutePath(), "hello.bin");
         assertFileEquals(expected, result);
+        client1.stop();
+        client2.stop();
         server.stop();
     }
 
@@ -118,6 +123,9 @@ public class TorrentTests {
 
         assertFileEquals(expected, result1);
         assertFileEquals(expected, result2);
+        client1.stop();
+        client2.stop();
+        client3.stop();
         server.stop();
     }
 
@@ -140,6 +148,7 @@ public class TorrentTests {
 
         final Map<Integer, FileInfo> result = clientSecond.listFiles();
         assertEquals(expected, result);
+        client.stop();
         serverSecond.stop();
     }
 

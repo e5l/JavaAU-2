@@ -13,14 +13,14 @@ public abstract class SocketServer implements Runnable {
     private final int port;
     protected ServerSocket socket;
 
-    protected SocketServer(int port) {
+    protected SocketServer(int port) throws IOException {
         this.port = port;
+        initSocket();
     }
 
     @Override
     public void run() {
         try {
-            initSocket();
             while (!socket.isClosed()) {
                 final Socket client = socket.accept();
                 acceptClient(client);

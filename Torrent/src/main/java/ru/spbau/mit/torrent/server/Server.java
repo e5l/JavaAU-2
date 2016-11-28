@@ -14,7 +14,7 @@ public class Server extends SocketServer {
     private final Storage storage;
     private final String configPath;
 
-    public Server(int port, String configPath) {
+    public Server(int port, String configPath) throws IOException {
         super(port);
         this.configPath = configPath;
         storage = loadOrCreate();

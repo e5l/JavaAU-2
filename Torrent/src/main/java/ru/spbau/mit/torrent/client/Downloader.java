@@ -59,13 +59,13 @@ public class Downloader implements Runnable {
                 final byte[] data = downloadBlock(seed, file.getId(), block);
                 file.writeBlock(block, data);
 
+                onDownload.onDownload(file);
                 if (closed) {
                     return;
                 }
             }
         }
 
-        onDownload.onDownload(file);
     }
 
     public void addTask(BlockFile file, Set<SocketInfo> seedList) {

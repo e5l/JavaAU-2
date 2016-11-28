@@ -52,6 +52,7 @@ public class BlockFile implements Serializable {
         raFile.seek(offset);
         raFile.write(block, 0, size);
         remainingBlocks.remove(id);
+        raFile.close();
     }
 
     public int getBlocksCount() {
@@ -83,5 +84,9 @@ public class BlockFile implements Serializable {
 
     public int getId() {
         return id;
+    }
+
+    public String getPath() {
+        return file.getAbsolutePath();
     }
 }

@@ -11,7 +11,7 @@ public class Seeder extends SocketServer {
     private final Thread seederThread;
     private final ConcurrentHashMap<Integer, BlockFile> files;
 
-    public Seeder(ConcurrentHashMap<Integer, BlockFile> files, int port) {
+    public Seeder(ConcurrentHashMap<Integer, BlockFile> files, int port) throws IOException {
         super(port);
         this.files = files;
 

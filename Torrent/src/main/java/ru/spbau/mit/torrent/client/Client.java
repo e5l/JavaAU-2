@@ -6,6 +6,7 @@ import ru.spbau.mit.torrent.protocol.ClientServer.*;
 import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.torrent.storage.FileInfo;
 import ru.spbau.mit.torrent.storage.SocketInfo;
+import ru.spbau.mit.utils.Pair;
 import ru.spbau.mit.utils.net.DataStreamClient;
 
 import java.io.*;
@@ -38,7 +39,6 @@ public class Client extends DataStreamClient {
             if (file.getRemainingBlocksSize() > 0) {
                 final Set<SocketInfo> seeds = getSeedsList(file.getId());
                 downloader.addTask(file, seeds);
-            } else {
                 onDownload.onDownload(file);
             }
         });
@@ -47,12 +47,11 @@ public class Client extends DataStreamClient {
         scheduleUpdate();
     }
 
-
-    public synchronized Map<Integer, FileInfo> listFiles() throws IOException {
+    public synchronized Map<Integer, Pair<FileInfo, BlockFile>> listFiles() throws IOException {
         new ListRequest().write(outputStream);
         final ListResponse response = ListResponse.readFrom(inputStream);
         catalog = response.response.stream().collect(Collectors.toMap(it -> it.id, it -> it));
-        return catalog;
+        return catalog.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, it -> new Pair<>(it.getValue(), files.get(it.getKey()))));
     }
 
     public synchronized void upload(String path) throws IOException, UpdateFailedException {

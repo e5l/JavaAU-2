@@ -1,7 +1,9 @@
 package ru.spbau.mit.torrent.client;
 
 import ru.spbau.mit.torrent.client.exceptions.UpdateFailedException;
+import ru.spbau.mit.torrent.storage.BlockFile;
 import ru.spbau.mit.torrent.storage.FileInfo;
+import ru.spbau.mit.utils.Pair;
 
 import java.io.IOException;
 import java.util.Map;
@@ -47,13 +49,13 @@ public class ClientREPL {
 
         switch (commandWithArgs[0].toLowerCase()) {
             case "list":
-                Map<Integer, FileInfo> files = client.listFiles();
+                Map<Integer, Pair<FileInfo, BlockFile>> files = client.listFiles();
                 files.entrySet()
                         .forEach(fileInfo -> System.out.println(
                                 String.format("%d: %s; size: %d",
-                                        fileInfo.getValue().id,
-                                        fileInfo.getValue().name,
-                                        fileInfo.getValue().size)));
+                                        fileInfo.getValue().first.id,
+                                        fileInfo.getValue().first.name,
+                                        fileInfo.getValue().first.size)));
                 break;
             case "upload":
                 if (commandWithArgs.length != 2) {
