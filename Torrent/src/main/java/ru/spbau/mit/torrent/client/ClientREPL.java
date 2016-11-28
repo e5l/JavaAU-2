@@ -23,7 +23,12 @@ public class ClientREPL {
         }
 
         try {
-            client = new Client(port, SERVER_ADDRESS, SERVER_PORT, file -> System.out.printf("Downloaded: %s%n", file), System.getProperty("user.dir"));
+            client = new Client(port, SERVER_ADDRESS, SERVER_PORT, file -> {
+                if (file.getRemainingBlocksSize() > 0) {
+                    return;
+                }
+                System.out.printf("Downloaded: %s%n", file);
+            }, System.getProperty("user.dir"));
         } catch (IOException e) {
             System.out.println("Couldn't connect to server: " + e.getMessage());
         }
