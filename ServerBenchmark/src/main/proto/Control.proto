@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit.benchmarks.generated";
+
+message Control {
+    enum Type {
+        INIT_SERVER = 0;
+        REQUEST_METRICS = 1;
+    }
+
+    Type type = 1;
+}

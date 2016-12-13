@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit.benchmarks.generated";
+
+message InitResponse {
+    int32 port = 1;
+}

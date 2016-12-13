@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit.benchmarks.generated";
+
+message BenchmarkParams {
+    enum ServerType {
+        TCP_THREAD_CLIENT = 0;
+        TCP_CACHED_POOL = 1;
+        TCP_FIXED_POOL = 2;
+        TCP_CONNECTION_QUERY = 3;
+        TCP_ASYNC = 4;
+
+        UDP_THREAD = 5;
+        UDP_POOL = 6;
+    }
+
+    int32 arraySize = 1;
+    int32 clientsCount = 2;
+    int32 messageDelay = 3;
+    int32 requestsCount = 4;
+    ServerType type = 5;
+};
