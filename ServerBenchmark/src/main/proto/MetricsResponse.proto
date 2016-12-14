@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit.benchmarks.generated";
+
+message MetricsResponse {
+    int64 totalRequestTime = 1;
+    int64 totalSortTime = 2;
+}

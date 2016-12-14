@@ -35,6 +35,7 @@ public final class TCPSortingClient extends Client {
                     socket = new Socket(host, port);
                 }
             }
+            socket.close();
         } catch (IOException e) {
             System.out.printf("Failed to process task: %s%n", e.getMessage());
         } catch (InterruptedException e) {

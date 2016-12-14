@@ -7,12 +7,17 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
+import ru.spbau.mit.benchmarks.generated.MetricsResponseOuterClass;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public final class ClientGUIController {
-    final Client client = new Client("", 0);
+    public static final String HOST = "127.0.0.1";
+    public static final int PORT = 8081;
+
+    final Client client = new Client(HOST, PORT);
     Stage stage;
 
     @FXML
@@ -39,13 +44,15 @@ public final class ClientGUIController {
         final BenchmarkParamsOuterClass.BenchmarkParams params = readParams();
 
         try {
-            client.measure(params);
-
+            final MetricsResponseOuterClass.MetricsResponse measure = client.measure(params);
             final FileChooser saveDialog = new FileChooser();
             final File file = saveDialog.showSaveDialog(stage);
+            try (final FileWriter writer = new FileWriter(file)) {
+                writer.write(String.format("%d %d", measure.getTotalRequestTime(), measure.getTotalSortTime()));
+            }
 
         } catch (IOException e) {
-            System.out.println("Failed to run benchmark");
+            System.out.printf("Failed to run benchmark: %s%n", e.getMessage());
         }
     }
 
