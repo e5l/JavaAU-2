@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class TcpThreadServer implements IServer {
+public final class TcpThreadServer implements IServer {
     private final int port;
     private ServerSocket server;
     private final AtomicLong totalRequestTime = new AtomicLong();

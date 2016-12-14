@@ -3,7 +3,7 @@ package ru.spbau.mit.benchmarks.server;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
 import ru.spbau.mit.benchmarks.server.impl.TcpThreadServer;
 
-public class ServerFactory {
+public final class ServerFactory {
     final int PORT = 9090;
 
     public IServer create(BenchmarkParamsOuterClass.BenchmarkParams.ServerType type) {

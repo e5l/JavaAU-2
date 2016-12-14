@@ -15,7 +15,8 @@ public abstract class Client {
         }
     }
 
-    abstract void task();
+    public abstract void task();
+    public abstract long getWorkTime();
 
     private List<Integer> generate(int size) {
         final Random random = new Random();

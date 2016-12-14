@@ -14,7 +14,7 @@ import java.io.InterruptedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server implements Runnable {
+public final class Server implements Runnable {
     private final ServerFactory serverFactory = new ServerFactory();
 
     private final int port;
@@ -31,9 +31,11 @@ public class Server implements Runnable {
     @Override
     public void run() {
         try (final ServerSocket serverSocket = new ServerSocket(port)) {
-            this.serverSocket = serverSocket;
-            client = serverSocket.accept();
-            processClient(client);
+            while (true) {
+                this.serverSocket = serverSocket;
+                client = serverSocket.accept();
+                processClient(client);
+            }
         } catch (InterruptedIOException e) {
             System.out.println("Server interrupted.");
         } catch (IOException e) {

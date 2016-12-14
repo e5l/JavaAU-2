@@ -7,7 +7,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
-import ru.spbau.mit.benchmarks.generated.MetricsResponseOuterClass;
+import ru.spbau.mit.benchmarks.utils.Metrics;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -44,11 +44,11 @@ public final class ClientGUIController {
         final BenchmarkParamsOuterClass.BenchmarkParams params = readParams();
 
         try {
-            final MetricsResponseOuterClass.MetricsResponse measure = client.measure(params);
+            final Metrics metrics = client.measure(params);
             final FileChooser saveDialog = new FileChooser();
             final File file = saveDialog.showSaveDialog(stage);
             try (final FileWriter writer = new FileWriter(file)) {
-                writer.write(String.format("%d %d", measure.getTotalRequestTime(), measure.getTotalSortTime()));
+                writer.write(metrics.toString());
             }
 
         } catch (IOException e) {

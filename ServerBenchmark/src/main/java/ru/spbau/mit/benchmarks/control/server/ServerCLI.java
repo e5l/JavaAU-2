@@ -2,7 +2,7 @@ package ru.spbau.mit.benchmarks.control.server;
 
 import java.io.IOException;
 
-public class ServerCLI {
+public final class ServerCLI {
     private static final int CONTROL_PORT = 8081;
 
     public static void main(String[] args) throws IOException {

@@ -12,6 +12,7 @@ public final class TCPSortingClient extends Client {
     private final int port;
     private final int messageDelay;
     private final boolean singleConnection;
+    private volatile long workTime;
 
     public TCPSortingClient(String host, int port, int arraySize, int requestsCount, int messageDelay, boolean singleConnection) {
         super(arraySize, requestsCount);
@@ -23,6 +24,7 @@ public final class TCPSortingClient extends Client {
 
     @Override
     public void task() {
+        long startTime = System.currentTimeMillis();
         try {
             Socket socket = new Socket(host, port);
 
@@ -37,10 +39,17 @@ public final class TCPSortingClient extends Client {
             }
             socket.close();
         } catch (IOException e) {
-            System.out.printf("Failed to process task: %s%n", e.getMessage());
+            // socket closed
         } catch (InterruptedException e) {
             System.out.printf("Benchmark interrupted: %s%n", e.getMessage());
         }
+
+        workTime = System.currentTimeMillis() - startTime;
+    }
+
+    @Override
+    public long getWorkTime() {
+        return workTime;
     }
 
     private void sortArray(final List<Integer> item, final Socket socket) throws IOException {
