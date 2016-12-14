@@ -7,7 +7,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
-import ru.spbau.mit.benchmarks.generated.BenchmarkResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +39,7 @@ public final class ClientGUIController {
         final BenchmarkParamsOuterClass.BenchmarkParams params = readParams();
 
         try {
-            final BenchmarkResult measure = client.measure(params);
+            client.measure(params);
 
             final FileChooser saveDialog = new FileChooser();
             final File file = saveDialog.showSaveDialog(stage);
