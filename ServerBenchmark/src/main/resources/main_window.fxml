@@ -11,115 +11,213 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.spbau.mit.benchmarks.control.client.ClientGUIController">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0"
+      prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.spbau.mit.benchmarks.control.client.ClientGUIController">
     <children>
         <VBox prefHeight="250.0" prefWidth="300.0">
             <children>
-            <Label text="TCP:">
-               <font>
-                  <Font size="17.0" />
-               </font>
-            </Label>
-                <RadioButton mnemonicParsing="false" selected="true" text="Thread/client" userData="0">
+                <VBox prefHeight="100.0" prefWidth="100.0">
+                    <children>
+                        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="150.0">
+                            <children>
+                                <Label text="Host:">
+                                    <padding>
+                                        <Insets right="5.0"/>
+                                    </padding>
+                                </Label>
+                                <TextField fx:id="host" text="127.0.0.1"/>
+                            </children>
+                            <VBox.margin>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </VBox.margin>
+                        </HBox>
+                    </children>
+                </VBox>
+                <Label text="TCP:">
+                    <font>
+                        <Font size="17.0"/>
+                    </font>
+                </Label>
+                <RadioButton mnemonicParsing="false" selected="true" text="Thread/client" userData="TCP_THREAD_CLIENT">
                     <VBox.margin>
-                        <Insets top="5.0" />
+                        <Insets top="5.0"/>
                     </VBox.margin>
-               <toggleGroup>
-                  <ToggleGroup fx:id="group" />
-               </toggleGroup>
+                    <toggleGroup>
+                        <ToggleGroup fx:id="group"/>
+                    </toggleGroup>
                 </RadioButton>
-                <RadioButton mnemonicParsing="false" text="Cached pool. Task = Client" toggleGroup="$group" userData="1">
+                <RadioButton mnemonicParsing="false" text="Cached pool. Task = Client" toggleGroup="$group"
+                             userData="TCP_CACHED_POOL">
                     <VBox.margin>
-                        <Insets top="5.0" />
-                    </VBox.margin>
-                </RadioButton>
-                <RadioButton mnemonicParsing="false" text="Fixed pool. Task = Query. Non blocking" toggleGroup="$group" userData="2">
-                    <VBox.margin>
-                        <Insets top="5.0" />
-                    </VBox.margin>
-                </RadioButton>
-                <RadioButton mnemonicParsing="false" text="Connection/query. Single thread" toggleGroup="$group" userData="3">
-                    <VBox.margin>
-                        <Insets top="5.0" />
-                    </VBox.margin>
-                </RadioButton>
-                <RadioButton mnemonicParsing="false" text="Async server" toggleGroup="$group" userData="4">
-                    <VBox.margin>
-                        <Insets bottom="5.0" top="5.0" />
-                    </VBox.margin>
-                </RadioButton>
-            <Separator prefWidth="200.0">
-               <VBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </VBox.margin>
-            </Separator>
-            <Label text="UDP:">
-               <font>
-                  <Font size="17.0" />
-               </font>
-            </Label>
-                <RadioButton mnemonicParsing="false" text="Thread/query" toggleGroup="$group" userData="5">
-                    <VBox.margin>
-                        <Insets top="5.0" />
+                        <Insets top="5.0"/>
                     </VBox.margin>
                 </RadioButton>
-                <RadioButton mnemonicParsing="false" text="Fixed pool" toggleGroup="$group" userData="6">
+                <RadioButton mnemonicParsing="false" text="Fixed pool. Task = Query. Non blocking" toggleGroup="$group"
+                             userData="TCP_FIXED_POOL">
                     <VBox.margin>
-                        <Insets top="5.0" />
+                        <Insets top="5.0"/>
+                    </VBox.margin>
+                </RadioButton>
+                <RadioButton mnemonicParsing="false" text="Connection/query. Single thread" toggleGroup="$group"
+                             userData="TCP_CONNECTION_QUERY">
+                    <VBox.margin>
+                        <Insets top="5.0"/>
+                    </VBox.margin>
+                </RadioButton>
+                <RadioButton mnemonicParsing="false" text="Async server" toggleGroup="$group" userData="TCP_ASYNC">
+                    <VBox.margin>
+                        <Insets bottom="5.0" top="5.0"/>
+                    </VBox.margin>
+                </RadioButton>
+                <Separator prefWidth="200.0">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                </Separator>
+                <Label text="UDP:">
+                    <font>
+                        <Font size="17.0"/>
+                    </font>
+                </Label>
+                <RadioButton mnemonicParsing="false" text="Thread/query" toggleGroup="$group" userData="UDP_THREAD">
+                    <VBox.margin>
+                        <Insets top="5.0"/>
+                    </VBox.margin>
+                </RadioButton>
+                <RadioButton mnemonicParsing="false" text="Fixed pool" toggleGroup="$group" userData="UDP_POOL">
+                    <VBox.margin>
+                        <Insets top="5.0"/>
                     </VBox.margin>
                 </RadioButton>
             </children>
             <padding>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
             </padding>
-         <HBox.margin>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-         </HBox.margin>
+            <HBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+            </HBox.margin>
         </VBox>
         <VBox prefHeight="250.0" prefWidth="300.0">
             <children>
+                <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="200.0">
+                    <Label text="from       ">
+                        <HBox.margin>
+                            <Insets left="5.0" right="5.0"/>
+                        </HBox.margin>
+                    </Label>
+                    <Label text="to         ">
+                        <HBox.margin>
+                            <Insets left="5.0" right="5.0"/>
+                        </HBox.margin>
+                    </Label>
+                    <Label text="step      ">
+                        <HBox.margin>
+                            <Insets left="5.0" right="5.0"/>
+                        </HBox.margin>
+                    </Label>
+                </HBox>
                 <HBox alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="200.0">
                     <children>
-                        <Label text="Size: " />
-                        <TextField fx:id="arraySize" text="10" />
+                        <Label minWidth="-Infinity" text="                  Size: "/>
+                        <TextField fx:id="arraySizeFrom" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="arraySizeTo" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="arraySizeStep" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
                     </children>
                     <VBox.margin>
-                        <Insets right="10.0" />
+                        <Insets right="10.0"/>
                     </VBox.margin>
                 </HBox>
                 <HBox alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="200.0">
                     <children>
-                        <Label text="Clients count: " />
-                        <TextField fx:id="clientsCount" text="5" />
+                        <Label minWidth="-Infinity" text="   Clients count: "/>
+                        <TextField fx:id="clientsCountFrom" text="5">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="clientsCountTo" text="5">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="clientsCountStep" text="5">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
                     </children>
                     <VBox.margin>
-                        <Insets right="10.0" />
+                        <Insets right="10.0"/>
                     </VBox.margin>
                 </HBox>
                 <HBox alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="200.0">
                     <children>
-                        <Label text="Query delay: " />
-                        <TextField fx:id="queryDelay" text="10" />
+                        <Label minWidth="-Infinity" text="      Query delay: "/>
+                        <TextField fx:id="queryDelayFrom" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="queryDelayTo" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="queryDelayStep" text="10">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
                     </children>
                     <VBox.margin>
-                        <Insets right="10.0" />
+                        <Insets right="10.0"/>
                     </VBox.margin>
                 </HBox>
                 <HBox alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="200.0">
                     <children>
-                        <Label text="Requests count: " />
-                        <TextField fx:id="requestsCount" text="300" />
+                        <Label minWidth="-Infinity" text="Requests count: "/>
+                        <TextField fx:id="requestsCountFrom" text="300">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="requestsCountTo" text="300">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
+                        <TextField fx:id="requestsCountStep" text="300">
+                            <HBox.margin>
+                                <Insets left="5.0"/>
+                            </HBox.margin>
+                        </TextField>
                     </children>
                     <VBox.margin>
-                        <Insets right="10.0" />
+                        <Insets right="10.0"/>
                     </VBox.margin>
                 </HBox>
                 <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#startClick" text="Start" />
+                        <Button fx:id="startButton" mnemonicParsing="false" onAction="#startClick" text="Start"/>
                     </children>
                 </HBox>
             </children>
+            <HBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+            </HBox.margin>
         </VBox>
     </children>
 </HBox>
