@@ -22,9 +22,9 @@ public final class ServerFactory {
             case TCP_ASYNC:
                 return new TcpAsync(PORT);
             case UDP_THREAD:
-                return new UdpThreadServer(PORT, type.getClientsCount(), type.getRequestsCount(), false);
+                return new UdpThreadServer(PORT, type.getClientsCount(), false);
             case UDP_POOL:
-                return new UdpThreadServer(PORT, type.getClientsCount(), type.getRequestsCount(), true);
+                return new UdpThreadServer(PORT, type.getClientsCount(), true);
             default:
                 break;
         }
