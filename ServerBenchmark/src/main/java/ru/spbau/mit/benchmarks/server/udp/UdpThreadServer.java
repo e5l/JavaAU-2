@@ -61,7 +61,7 @@ public class UdpThreadServer implements IServer {
         public void run() {
             try {
                 final DatagramSocket socket = new DatagramSocket(currentPort);
-                final byte[] buffer = new byte[4096];
+                final byte[] buffer = new byte[65507];
                 final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
@@ -83,7 +83,7 @@ public class UdpThreadServer implements IServer {
 
                 final ByteBuffer result = ByteBuffer.allocate(4 + build.getSerializedSize());
                 result.putInt(build.getSerializedSize());
-                result.put(result.array());
+                result.put(build.toByteArray());
 
                 socket.send(new DatagramPacket(result.array(),
                         result.array().length,
@@ -91,6 +91,7 @@ public class UdpThreadServer implements IServer {
                         packet.getPort()));
 
                 totalRequestTime.getAndAdd(System.currentTimeMillis() - startTime);
+                socket.close();
                 if (requestIndex <= requestsCount) {
                     startHandler(new Handler(currentPort, requestIndex + 1));
                 }
