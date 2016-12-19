@@ -26,6 +26,7 @@ public class UDPSortingClient extends Client {
             try {
                 final DatagramSocket socket = new DatagramSocket(port);
                 sortArray(item, socket);
+                socket.close();
             } catch (IOException e) {
                 // failed to create socket
             }
@@ -43,7 +44,7 @@ public class UDPSortingClient extends Client {
         final DatagramPacket message = new DatagramPacket(packet, packet.length, InetAddress.getByName(host), port);
         socket.send(message);
 
-        byte[] buff = new byte[4098];
+        byte[] buff = new byte[65507];
         socket.receive(new DatagramPacket(buff, buff.length));
     }
 

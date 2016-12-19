@@ -100,7 +100,8 @@ public final class ClientGUIController {
         }
 
         try (final FileWriter writer = new FileWriter(file)) {
-            writer.write(String.format("%s, %s, %s, %s, %s, %s, %s\n",
+            writer.write(String.format("%s, %s, %s, %s, %s, %s, %s, %s\n",
+                    "server type",
                     "array size",
                     "clients count",
                     "message delay",
@@ -110,7 +111,8 @@ public final class ClientGUIController {
                     "average sort time"));
 
             for (Pair<BenchmarkParams, Metrics> item : results) {
-                writer.write(String.format("%d, %d, %d, %d, %f, %f, %f\n",
+                writer.write(String.format("%s, %d, %d, %d, %d, %f, %f, %f\n",
+                        item.first.getType().toString(),
                         item.first.getArraySize(),
                         item.first.getClientsCount(),
                         item.first.getMessageDelay(),
