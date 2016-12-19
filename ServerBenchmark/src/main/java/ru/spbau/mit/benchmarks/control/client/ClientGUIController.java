@@ -1,11 +1,14 @@
 package ru.spbau.mit.benchmarks.control.client;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass.BenchmarkParams;
@@ -17,6 +20,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public final class ClientGUIController {
     public static final int PORT = 8081;
@@ -59,6 +65,8 @@ public final class ClientGUIController {
     @FXML
     protected Button startButton;
 
+    private List<Pair<BenchmarkParams, Metrics>> currentResults = null;
+
     public void init(Stage stage) {
         this.stage = stage;
     }
@@ -86,13 +94,61 @@ public final class ClientGUIController {
 
             Platform.runLater(() -> {
                 startButton.setText("Start");
+                currentResults = results;
                 saveToCsv(results);
                 startButton.setDisable(false);
             });
         }).start();
     }
 
-    private void saveToCsv(List<Pair<BenchmarkParams, Metrics>> results) {
+    @FXML
+    protected void plotClick(final ActionEvent actionEvent) {
+        if (currentResults == null || currentResults.size() < 2) {
+            return;
+        }
+
+        Dialog<Object> dialog = new Dialog<>();
+        dialog.setTitle("Plots");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+        Supplier<List<Double>> sup = null;
+        if (currentResults.get(0).first.getArraySize() != currentResults.get(1).first.getArraySize()) {
+            sup = () -> currentResults.stream().map(it -> it.first.getArraySize() * 1.0).collect(Collectors.toList());
+        } else if (currentResults.get(0).first.getClientsCount() != currentResults.get(1).first.getClientsCount()) {
+            sup = () -> currentResults.stream().map(it -> it.first.getClientsCount() * 1.0).collect(Collectors.toList());
+        } else {
+            sup = () -> currentResults.stream().map(it -> it.first.getMessageDelay() * 1.0).collect(Collectors.toList());
+        }
+
+        GridPane box = new GridPane();
+        box.add(generateChart("Average sort time", sup.get(),
+                currentResults.stream().map(it -> it.second.getAverageSortTime()).collect(Collectors.toList())), 0, 0);
+        box.add(generateChart("Average request time", sup.get(),
+                currentResults.stream().map(it -> it.second.getAverageRequestTime()).collect(Collectors.toList())), 0, 1);
+        box.add(generateChart("Average client time", sup.get(),
+                currentResults.stream().map(it -> it.second.getAverageClientWorkTime()).collect(Collectors.toList())), 0, 2);
+
+        dialog.getDialogPane().setContent(box);
+        Optional<Object> result = dialog.showAndWait();
+    }
+
+    private LineChart<Number, Number> generateChart(String label, List<Double> first, List<Double> second) {
+        final NumberAxis xAxis = new NumberAxis();
+        final NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel(label);
+
+        final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
+        XYChart.Series series = new XYChart.Series();
+
+        final ObservableList data = series.getData();
+        for (int i = 0; i < first.size(); ++i) {
+            data.add(new XYChart.Data<>(first.get(i), second.get(i)));
+        }
+
+        lineChart.getData().add(series);
+        return lineChart;
+    }
+
+    private void saveToCsv(final List<Pair<BenchmarkParams, Metrics>> results) {
         final FileChooser saveDialog = new FileChooser();
         final File file = saveDialog.showSaveDialog(stage);
         if (file == null) {

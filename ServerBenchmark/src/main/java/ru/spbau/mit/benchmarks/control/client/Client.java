@@ -33,7 +33,8 @@ public final class Client {
                     (Integer port) -> new UDPSortingClient(
                             params.getArraySize(),
                             params.getRequestsCount(),
-                            sortPort,
+                            params.getMessageDelay(),
+                            port,
                             host) :
                     (Integer port) -> new TCPSortingClient(host,
                             port,

@@ -212,6 +212,7 @@
                 <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0">
                     <children>
                         <Button fx:id="startButton" mnemonicParsing="false" onAction="#startClick" text="Start"/>
+                        <Button fx:id="plotButton" mnemonicParsing="false" onAction="#plotClick" text="Plot"/>
                     </children>
                 </HBox>
             </children>
