@@ -1,4 +1,4 @@
-package ru.spbau.mit.benchmarks.server.impl;
+package ru.spbau.mit.benchmarks.server.tcp;
 
 import ru.spbau.mit.benchmarks.utils.DataSocket;
 

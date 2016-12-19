@@ -2,6 +2,7 @@ package ru.spbau.mit.benchmarks.control.client;
 
 import ru.spbau.mit.benchmarks.client.ClientEmitter;
 import ru.spbau.mit.benchmarks.client.TCPSortingClient;
+import ru.spbau.mit.benchmarks.client.UDPSortingClient;
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
 import ru.spbau.mit.benchmarks.generated.ControlOuterClass;
 import ru.spbau.mit.benchmarks.generated.InitResponseOuterClass;
@@ -29,13 +30,19 @@ public final class Client {
                     || params.getType() == BenchmarkParamsOuterClass.BenchmarkParams.ServerType.UDP_THREAD);
 
             final ClientEmitter emitter = new ClientEmitter(params.getClientsCount(), udp ?
-                    () -> null :
-                    () -> new TCPSortingClient(host,
+                    (Integer port) -> new UDPSortingClient(
+                            params.getArraySize(),
+                            params.getRequestsCount(),
                             sortPort,
+                            host) :
+                    (Integer port) -> new TCPSortingClient(host,
+                            port,
                             params.getArraySize(),
                             params.getRequestsCount(),
                             params.getMessageDelay(),
-                            params.getType() != BenchmarkParamsOuterClass.BenchmarkParams.ServerType.TCP_CONNECTION_QUERY));
+                            params.getType() != BenchmarkParamsOuterClass.BenchmarkParams.ServerType.TCP_CONNECTION_QUERY ||
+                                    params.getType() != BenchmarkParamsOuterClass.BenchmarkParams.ServerType.TCP_ASYNC),
+                    udp, sortPort);
 
             emitter.run();
             final long totalClientsWorkTime = emitter.getTotalWorkTime();

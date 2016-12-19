@@ -23,6 +23,7 @@ public final class Server implements Runnable {
 
     private volatile Socket client;
     private volatile ServerSocket serverSocket;
+    private Thread currentThread = null;
 
     public Server(final int port) {
         this.port = port;
@@ -50,8 +51,14 @@ public final class Server implements Runnable {
                 switch (type) {
                     case INIT_SERVER:
                         final BenchmarkParamsOuterClass.BenchmarkParams params = BenchmarkParamsOuterClass.BenchmarkParams.parseFrom(client.read());
-                        sortServer = serverFactory.create(params.getType());
-                        new Thread(sortServer).start();
+                        if (currentThread != null) {
+                            sortServer.stop();
+                            currentThread.join();
+                        }
+
+                        sortServer = serverFactory.create(params);
+                        currentThread = new Thread(sortServer);
+                        currentThread.start();
                         client.write(InitResponseOuterClass.InitResponse.newBuilder().setPort(sortServer.getPort()).build());
                         break;
                     case REQUEST_METRICS:
@@ -64,6 +71,16 @@ public final class Server implements Runnable {
             }
         } catch (IOException e) {
             sortServer.stop();
+            if (currentThread != null) {
+                currentThread.interrupt();
+                try {
+                    currentThread.join();
+                } catch (InterruptedException e1) {
+                    System.out.printf("Double stop server: %s%n", e1.getMessage());
+                }
+            }
+        } catch (InterruptedException e) {
+            // server stopped
         }
     }
 

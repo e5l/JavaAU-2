@@ -1,27 +1,30 @@
 package ru.spbau.mit.benchmarks.server;
 
 import ru.spbau.mit.benchmarks.generated.BenchmarkParamsOuterClass;
-import ru.spbau.mit.benchmarks.server.impl.TcpThreadServer;
+import ru.spbau.mit.benchmarks.server.tcp.*;
+import ru.spbau.mit.benchmarks.server.udp.UdpThreadServer;
+
+import java.io.IOException;
 
 public final class ServerFactory {
     final int PORT = 9090;
 
-    public IServer create(BenchmarkParamsOuterClass.BenchmarkParams.ServerType type) {
-        switch (type) {
+    public IServer create(BenchmarkParamsOuterClass.BenchmarkParams type) throws IOException {
+        switch (type.getType()) {
             case TCP_THREAD_CLIENT:
                 return new TcpThreadServer(PORT);
             case TCP_CACHED_POOL:
-                break;
+                return new TcpCachedPoolServer(PORT);
             case TCP_FIXED_POOL:
-                break;
+                return new TcpNonBlockingFixedPool(PORT);
             case TCP_CONNECTION_QUERY:
-                break;
+                return new TcpSingleConnectionServer(PORT);
             case TCP_ASYNC:
-                break;
+                return new TcpAsync(PORT);
             case UDP_THREAD:
-                break;
+                return new UdpThreadServer(PORT, type.getClientsCount(), type.getRequestsCount(), false);
             case UDP_POOL:
-                break;
+                return new UdpThreadServer(PORT, type.getClientsCount(), type.getRequestsCount(), true);
             default:
                 break;
         }

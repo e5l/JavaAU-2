@@ -1,4 +1,4 @@
-package ru.spbau.mit.benchmarks.server.impl;
+package ru.spbau.mit.benchmarks.server.tcp;
 
 import ru.spbau.mit.benchmarks.generated.MetricsResponseOuterClass;
 import ru.spbau.mit.benchmarks.generated.SortDataOuterClass;
@@ -19,7 +19,6 @@ public abstract class TcpBlockingProcessor implements IServer {
 
     protected final AtomicLong totalRequestTime = new AtomicLong();
     protected final AtomicLong totalSortTime = new AtomicLong();
-
 
     public TcpBlockingProcessor(final int port) {
         this.port = port;
